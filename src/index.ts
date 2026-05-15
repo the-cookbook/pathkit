@@ -1,12 +1,12 @@
 export type {
-  RouteSegment,
-  LiteralSegment,
-  ParameterSegment,
   Constraint,
-  TokenType,
-  Token,
   ConstraintValidation,
+  LiteralSegment,
   MatchedParam,
+  ParameterSegment,
+  RouteSegment,
+  Token,
+  TokenType,
 } from './contracts';
 
 export { default as compile, type CompileOptions } from './compile';

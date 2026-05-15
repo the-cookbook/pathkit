@@ -1,10 +1,7 @@
 import tokenize from './tokenize';
-import * as constraintMethods from './constraints';
+import type { ConstraintValidation } from './contracts';
+import { getRegisteredConstraint } from './utils/get-constraint';
 import { isParameterToken } from './utils/segment-filters';
-
-type ConstraintType = keyof typeof constraintMethods;
-
-const isConstraintType = (type: string): type is ConstraintType => type in constraintMethods;
 
 const validateRoute = (route: string): void => {
   const segments = tokenize(route);
@@ -14,13 +11,13 @@ const validateRoute = (route: string): void => {
 
   for (const { name, constraints } of paramSegments) {
     for (const constraint of constraints) {
-      if (!isConstraintType(constraint.type)) {
+      const validator: ConstraintValidation | undefined = getRegisteredConstraint(constraint.type);
+
+      if (!validator) {
         throw new Error(
           `[Constraint]: Unknown constraint type: "${constraint.type}" for route pattern "${route}"`,
         );
       }
-
-      const validator = constraintMethods[constraint.type];
 
       try {
         validator.verify(name, constraint.params);

@@ -1,10 +1,10 @@
 import tokenize from './tokenize';
 import validateConstraints from './validate-constraints';
 import escapeRegex from './utils/escape-regex';
+import { getRegisteredConstraint } from './utils/get-constraint';
 import { is } from './utils/is';
 import { isLiteralToken, isParameterToken } from './utils/segment-filters';
-import * as constraintMethods from './constraints';
-import type { RouteSegment, ParameterSegment, MatchedParam } from './contracts';
+import type { MatchedParam, ParameterSegment, RouteSegment } from './contracts';
 
 interface MatchOptions {
   delimiter?: string;
@@ -16,34 +16,34 @@ const defaultOptions: Required<MatchOptions> = {
   trailing: true,
 };
 
-type ConstraintType = keyof typeof constraintMethods;
+const getDefaultParamPattern = (paramSegment: ParameterSegment): string => {
+  if (paramSegment.wildcard) {
+    return '.*';
+  }
 
-const isConstraintType = (type: string): type is ConstraintType => type in constraintMethods;
+  return '[^/]+';
+};
 
 const getParamPattern = (paramSegment: ParameterSegment): string => {
   if (!paramSegment.constraints.length) {
-    return paramSegment.wildcard ? '.*' : '[^/]+';
+    return getDefaultParamPattern(paramSegment);
   }
-
-  let paramPattern = '';
 
   for (const constraint of paramSegment.constraints) {
-    if (!isConstraintType(constraint.type)) {
-      paramPattern = '[^/]+';
+    const validator = getRegisteredConstraint(constraint.type);
+
+    if (!validator) {
       continue;
     }
 
-    const constraintRegExp = constraintMethods[constraint.type].toRegExp(constraint.params);
+    const constraintRegExp = validator.toRegExp(constraint.params);
 
     if (constraintRegExp) {
-      paramPattern = constraintRegExp;
-      continue;
+      return constraintRegExp;
     }
-
-    paramPattern = '[^/]+';
   }
 
-  return paramPattern;
+  return getDefaultParamPattern(paramSegment);
 };
 
 const buildRegexFromRoute = (
@@ -53,7 +53,7 @@ const buildRegexFromRoute = (
   const { delimiter, trailing } = { ...defaultOptions, ...options };
   const paramNames: string[] = [];
   const regexParts: string[] = [];
-  const ROUTE_DELIMITER = new RegExp(`${delimiter}$`);
+  const escapedDelimiter = escapeRegex(delimiter);
 
   for (const [i, segment] of segments.entries()) {
     if (isParameterToken(segment)) {
@@ -64,21 +64,23 @@ const buildRegexFromRoute = (
       const paramPattern = getParamPattern(segment);
 
       if (segment.optional) {
-        let precedingLiteral = '';
-
         const previousSegment = segments[i - 1];
 
         if (previousSegment && isLiteralToken(previousSegment) && previousSegment.value) {
-          precedingLiteral = escapeRegex(previousSegment.value.replace(ROUTE_DELIMITER, ''));
-          regexParts.pop();
-        }
+          const previousLiteral = previousSegment.value;
+          const separator = previousLiteral.at(-1) ?? delimiter;
+          const precedingLiteral = previousLiteral.slice(0, -1);
 
-        if (!regexParts.length) {
-          regexParts.push(`${precedingLiteral}${delimiter}?(?<${paramName}>${paramPattern})?`);
+          regexParts.pop();
+
+          regexParts.push(
+            `${escapeRegex(precedingLiteral)}(?:${escapeRegex(separator)}(?<${paramName}>${paramPattern}))?`,
+          );
+
           continue;
         }
 
-        regexParts.push(`(?:${precedingLiteral}${delimiter}?)(?<${paramName}>${paramPattern})?`);
+        regexParts.push(`(?<${paramName}>${paramPattern})?`);
         continue;
       }
 
@@ -92,7 +94,7 @@ const buildRegexFromRoute = (
   }
 
   if (trailing) {
-    regexParts.push(`${delimiter}?`);
+    regexParts.push(`${escapedDelimiter}?`);
   }
 
   const pattern = new RegExp(`^${regexParts.join('')}$`);
@@ -119,23 +121,25 @@ const match = (route: string, options: MatchOptions = {}) => {
 
     for (const paramName of paramNames) {
       const value = result.groups?.[paramName];
-
       const paramSegment = parameterSegments.find((token) => token.name === paramName);
 
       if (!paramSegment) {
         continue;
       }
 
-      if (!is.nullish(value)) {
-        try {
-          validateConstraints(paramName, value, paramSegment.constraints);
-          params[paramName] = value;
-        } catch {
-          return {
-            match: false,
-            params: null,
-          };
-        }
+      if (is.nullish(value)) {
+        params[paramName] = undefined;
+        continue;
+      }
+
+      try {
+        validateConstraints(paramName, value, paramSegment.constraints);
+        params[paramName] = value;
+      } catch {
+        return {
+          match: false,
+          params: null,
+        };
       }
     }
 

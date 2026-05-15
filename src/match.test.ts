@@ -1,4 +1,6 @@
 import match from './match';
+import { registerConstraint, unregisterConstraint } from './constraints/registry';
+import type { ConstraintValidation } from './contracts';
 
 describe('match', () => {
   it('should throw error on wrong route pattern', () => {
@@ -176,5 +178,84 @@ describe('match', () => {
     },
   ])('should match route pattern with encoded params', ({ pattern, path, matches }) => {
     expect(match(pattern, { delimiter: '.' })(path)).toEqual(matches);
+  });
+
+  describe('custom constraints', () => {
+    const uuidish: ConstraintValidation = Object.assign(
+      (param: string, value: string | number | boolean | undefined) => {
+        if (typeof value !== 'string' || !/^[a-f0-9]{8}$/.test(value)) {
+          throw new Error(`Parameter "${param}" must be uuidish`);
+        }
+      },
+      {
+        verify: () => undefined,
+        toRegExp: () => '[a-f0-9]{8}',
+      },
+    );
+
+    afterEach(() => {
+      unregisterConstraint('uuidish');
+    });
+
+    it('should match custom registered constraint', () => {
+      registerConstraint('uuidish', uuidish);
+
+      expect(match('/users/{id:uuidish}')('/users/a1b2c3d4')).toEqual({
+        match: true,
+        params: {
+          id: 'a1b2c3d4',
+        },
+      });
+    });
+
+    it('should not match custom registered constraint when regexp fails', () => {
+      registerConstraint('uuidish', uuidish);
+
+      expect(match('/users/{id:uuidish}')('/users/not-valid')).toEqual({
+        match: false,
+        params: null,
+      });
+    });
+
+    it('should not match custom registered constraint when validation fails after regexp match', () => {
+      const constraint: ConstraintValidation = Object.assign(
+        () => {
+          throw new Error('forced failure');
+        },
+        {
+          verify: () => undefined,
+          toRegExp: () => '[a-z]+',
+        },
+      );
+
+      registerConstraint('uuidish', constraint);
+
+      expect(match('/users/{id:uuidish}')('/users/abcdef')).toEqual({
+        match: false,
+        params: null,
+      });
+    });
+
+    it('should handle optional custom constrained params when missing', () => {
+      registerConstraint('uuidish', uuidish);
+
+      expect(match('/users/{id:uuidish?}')('/users')).toEqual({
+        match: true,
+        params: {
+          id: undefined,
+        },
+      });
+    });
+
+    it('should handle optional custom constrained params when present', () => {
+      registerConstraint('uuidish', uuidish);
+
+      expect(match('/users/{id:uuidish?}')('/users/a1b2c3d4')).toEqual({
+        match: true,
+        params: {
+          id: 'a1b2c3d4',
+        },
+      });
+    });
   });
 });

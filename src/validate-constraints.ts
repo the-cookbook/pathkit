@@ -1,9 +1,5 @@
+import { getRegisteredConstraint } from './utils/get-constraint';
 import type { Constraint } from './contracts';
-import * as constraintMethods from './constraints';
-
-type ConstraintType = keyof typeof constraintMethods;
-
-const isConstraintType = (type: string): type is ConstraintType => type in constraintMethods;
 
 const validateConstraints = (
   paramName: string,
@@ -11,11 +7,11 @@ const validateConstraints = (
   constraints: readonly Constraint[],
 ): void => {
   for (const constraint of constraints) {
-    if (!isConstraintType(constraint.type)) {
+    const validator = getRegisteredConstraint(constraint.type);
+
+    if (!validator) {
       throw new Error(`[Constraint]: Unknown constraint type: ${constraint.type}`);
     }
-
-    const validator = constraintMethods[constraint.type];
 
     validator(paramName, value, constraint.params);
   }

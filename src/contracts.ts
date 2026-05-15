@@ -16,11 +16,6 @@ interface ParameterSegment {
 
 type RouteSegment = LiteralSegment | ParameterSegment;
 
-interface Constraint {
-  type: string;
-  params: string;
-}
-
 type TokenType =
   | 'Literal'
   | 'OpenBrace'
@@ -41,25 +36,29 @@ interface Token {
   position: number;
 }
 
-type ConstraintValidation = ((
-  paramName: string,
-  value: string | number | boolean | undefined,
-  params: Constraint['params'],
-) => void) & {
-  verify: (paramName: string, params: Constraint['params']) => void;
-  toRegExp: (params: Constraint['params']) => string;
-};
+interface Constraint {
+  type: string;
+  params: string;
+}
 
-type MatchedParam = Record<string, string | string[] | null>;
+interface ConstraintValidation {
+  (paramName: string, value: string | number | boolean | undefined, params: string): void;
+
+  verify(paramName: string, params: string): void;
+
+  toRegExp(params: string): string;
+}
+
+type MatchedParam = Record<string, string | string[] | null | undefined>;
 
 export type {
   TypeOrArray,
   RouteSegment,
   LiteralSegment,
   ParameterSegment,
-  Constraint,
   TokenType,
   Token,
+  Constraint,
   ConstraintValidation,
   MatchedParam,
 };
