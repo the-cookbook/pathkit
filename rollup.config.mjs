@@ -4,21 +4,32 @@ import dts from 'rollup-plugin-dts';
 
 const external = [/^node:/];
 
+const entries = {
+  index: 'src/index.ts',
+  compile: 'src/compile.ts',
+  match: 'src/match.ts',
+  tokenize: 'src/tokenize.ts',
+  'validate-route': 'src/validate-route.ts',
+  'constraints/index': 'src/constraints/index.ts',
+};
+
 export default [
   {
-    input: 'src/index.ts',
+    input: entries,
     external,
     output: [
       {
-        file: 'dist/index.js',
+        dir: 'dist',
         format: 'esm',
         sourcemap: true,
+        entryFileNames: '[name].js',
       },
       {
-        file: 'dist/index.cjs',
+        dir: 'dist',
         format: 'cjs',
         sourcemap: true,
         exports: 'named',
+        entryFileNames: '[name].cjs',
       },
     ],
     plugins: [
@@ -31,8 +42,14 @@ export default [
     ],
   },
   {
-    input: 'dist/types/index.d.ts',
-    output: [{ file: 'dist/index.d.ts', format: 'esm' }],
+    input: Object.fromEntries(
+      Object.keys(entries).map((name) => [name, `dist/types/${name}.d.ts`]),
+    ),
+    output: {
+      dir: 'dist',
+      format: 'esm',
+      entryFileNames: '[name].d.ts',
+    },
     plugins: [dts()],
   },
 ];

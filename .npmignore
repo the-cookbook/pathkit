@@ -1,8 +1,36 @@
-src/
-test/
-coverage/
-.github/
-.husky/
-*.config.*
-tsconfig*.json
-eslint.config.js
+# Source
+src
+coverage
+.vscode
+.idea
+
+# Tests
+*.test.ts
+*.spec.ts
+vitest.config.*
+jest.config.*
+
+# Tooling
+tsconfig.json
+tsconfig.*.json
+eslint.config.*
+.prettierrc*
+.editorconfig
+
+# Environment
+.env
+.env.*
+
+# VCS
+.git
+.github
+.gitignore
+
+# Package manager
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Misc
+*.log
+.DS_Store
