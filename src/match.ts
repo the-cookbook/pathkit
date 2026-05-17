@@ -9,11 +9,13 @@ import type { MatchedParam, ParameterSegment, RouteSegment } from './contracts';
 interface MatchOptions {
   delimiter?: string;
   trailing?: boolean;
+  strict?: boolean;
 }
 
 const defaultOptions: Required<MatchOptions> = {
   delimiter: '/',
   trailing: true,
+  strict: false,
 };
 
 const getDefaultParamPattern = (paramSegment: ParameterSegment): string => {
@@ -135,7 +137,11 @@ const match = (route: string, options: MatchOptions = {}) => {
       try {
         validateConstraints(paramName, value, paramSegment.constraints);
         params[paramName] = value;
-      } catch {
+      } catch (error) {
+        if (options.strict) {
+          throw error;
+        }
+
         return {
           match: false,
           params: null,

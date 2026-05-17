@@ -10,4 +10,5 @@ export {
   hasRegisteredConstraint,
   registerConstraint,
   unregisterConstraint,
+  resetConstraints,
 } from './registry';

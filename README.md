@@ -14,6 +14,7 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
 - Custom constraints
 - Custom delimiters
 - Parameter type enforcement
+- Strict match validation
 - TypeScript support
 - ESM and CommonJS
 
@@ -46,11 +47,13 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
     - [Signature](#signature-1)
     - [Example](#example-1)
     - [Failed Match](#failed-match)
+    - [Strict Match](#strict-match)
     - [Optional Parameters](#optional-parameters-2)
     - [Wildcards](#wildcards-1)
   - [Match Options](#match-options)
     - [delimiter](#delimiter-1)
     - [trailing](#trailing)
+    - [strict](#strict)
   - [tokenize()](#tokenize)
     - [Signature](#signature-2)
     - [Example](#example-2)
@@ -79,6 +82,7 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
   - [Constraint Namespace](#constraint-namespace)
   - [Deep Imports](#deep-imports)
 - [Error Handling](#error-handling)
+- [Examples](#examples)
 - [Design Goals](#design-goals)
 - [License](#license)
 
@@ -136,6 +140,7 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 | Optional parameters                | Yes                   | Yes                             |
 | Wildcard parameters                | Yes                   | Yes                             |
 | Parameter type enforcement         | Yes                   | No                              |
+| Strict match validation            | Yes                   | No                              |
 | TypeScript-first API               | Yes                   | Partial                         |
 | Framework agnostic                 | Yes                   | Yes                             |
 | Zero dependencies                  | Yes                   | No                              |
@@ -166,6 +171,7 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 - SSR compatible
 - ESM + CommonJS exports
 - Strong TypeScript support
+- Optional strict matching for debugging constraint failures
 
 ---
 
@@ -311,7 +317,11 @@ Changes the array join delimiter.
 ```ts
 compile('/tags/{*path}', {
   delimiter: '.',
+})({
+  path: ['frontend', 'typescript', 'routing'],
 });
+
+// /tags/frontend.typescript.routing
 ```
 
 ---
@@ -343,12 +353,17 @@ compile('/hello//world/', {
 
 Matches a route pattern against a path.
 
+By default, `match()` is router-safe: constraint validation failures return a failed match instead of throwing. This makes it suitable for trying multiple route candidates.
+
+Use `strict: true` when you want constraint validation errors to be thrown for debugging or development tooling.
+
 ## Signature
 
 ```ts
 interface MatchOptions {
   delimiter?: string;
   trailing?: boolean;
+  strict?: boolean;
 }
 
 type MatchedParam = Record<string, string | string[] | null | undefined>;
@@ -398,6 +413,45 @@ Returns:
   params: null,
 }
 ```
+
+---
+
+## Strict Match
+
+By default, invalid constrained values return a failed match:
+
+```ts
+const matcher = match('/users/{id:int}');
+
+matcher('/users/abc');
+```
+
+Returns:
+
+```ts
+{
+  match: false,
+  params: null,
+}
+```
+
+Enable `strict` mode to throw constraint validation errors:
+
+```ts
+const strictMatcher = match('/users/{id:int}', {
+  strict: true,
+});
+
+strictMatcher('/users/abc');
+```
+
+Throws:
+
+```txt
+[Constraint] Parameter "id" must be a number, instead got 'string'
+```
+
+This is useful for development tools, tests, debugging, and cases where an invalid constrained value should be treated as an application error instead of a non-match.
 
 ---
 
@@ -465,6 +519,41 @@ Controls trailing delimiter matching.
 match('/hello/{name}', {
   trailing: false,
 });
+```
+
+---
+
+## strict
+
+Controls whether constraint validation errors are thrown.
+
+Default:
+
+```ts
+strict: false;
+```
+
+When `strict` is disabled, constraint validation failures return:
+
+```ts
+{
+  match: false,
+  params: null,
+}
+```
+
+When `strict` is enabled, constraint validation failures are thrown:
+
+```ts
+match('/users/{id:int}', {
+  strict: true,
+})('/users/abc');
+```
+
+Throws:
+
+```txt
+[Constraint] Parameter "id" must be a number, instead got 'string'
 ```
 
 ---
@@ -620,6 +709,12 @@ Validates that a parameter is an integer.
 /users/foo-1
 ```
 
+### Notes
+
+- Does not accept constraint parameters
+- Uses `\d+` as its match pattern
+- Runtime validation is also applied during `compile()` and during `match()` when a path candidate matches the generated pattern
+
 ---
 
 ## range
@@ -769,6 +864,8 @@ Registers or replaces a constraint.
 declare const registerConstraint: (name: string, constraint: ConstraintValidation) => void;
 ```
 
+If a constraint with the same name already exists, it is replaced.
+
 ### Example
 
 ```ts
@@ -796,6 +893,48 @@ registerConstraint('slug', slug);
 const matcher = match('/posts/{slug:slug}');
 
 matcher('/posts/hello-world');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  params: {
+    slug: 'hello-world',
+  },
+}
+```
+
+Invalid values return a failed match by default:
+
+```ts
+matcher('/posts/heiß');
+```
+
+Returns:
+
+```ts
+{
+  match: false,
+  params: null,
+}
+```
+
+Use strict mode to throw the custom constraint error:
+
+```ts
+const strictMatcher = match('/posts/{slug:slug}', {
+  strict: true,
+});
+
+strictMatcher('/posts/heiß');
+```
+
+Throws:
+
+```txt
+Parameter "slug" must be a valid slug
 ```
 
 ---
@@ -913,9 +1052,7 @@ import { compile, match, tokenize, validateRoute } from '@the-cookbook/pathkit';
 ## Constraint Namespace
 
 ```ts
-import {
-  constraints,
-} from '@the-cookbook/pathkit';
+import { constraints } from '@the-cookbook/pathkit';
 
 constraints.registerConstraint(...);
 ```
@@ -933,21 +1070,54 @@ import compile from '@the-cookbook/pathkit/compile';
 
 # Error Handling
 
-All validation and parsing errors throw standard `Error` instances with descriptive messages.
+All validation and parsing errors use standard `Error` instances with descriptive messages.
 
-Example:
+## compile()
+
+`compile()` throws when required params are missing or provided params do not satisfy constraints.
 
 ```txt
 [Compile] Missing required parameter: id
 ```
 
 ```txt
+Parameter "page" must be one of: home, dashboard
+```
+
+## match()
+
+`match()` returns failed matches by default when a path does not match the route or does not satisfy route constraints.
+
+```ts
+{
+  match: false,
+  params: null,
+}
+```
+
+With `strict: true`, constraint validation errors are thrown instead of being converted into failed matches.
+
+```txt
+[Constraint] Parameter "id" must be a number, instead got 'string'
+```
+
+## tokenize() / validateRoute()
+
+Invalid route patterns and invalid constraint declarations throw.
+
+```txt
 [Tokenize] Invalid route pattern: Unexpected token
 ```
 
 ```txt
-Parameter "page" must be one of: home, dashboard
+[Constraint]: Unknown constraint type: "unknown"
 ```
+
+---
+
+# Examples
+
+See the [`examples`](./examples) directory for complete real-world usage examples.
 
 ---
 

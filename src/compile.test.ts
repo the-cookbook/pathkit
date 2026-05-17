@@ -1,4 +1,4 @@
-import compile from './compile';
+import compile, { type CompileOptions } from './compile';
 import type { TypeOrArray } from './contracts';
 
 describe('compile()', () => {
@@ -59,13 +59,35 @@ describe('compile()', () => {
       params: { path: 'folder/subfolder/file.txt' },
       expects: '/files/folder/subfolder/file.txt',
     },
+    {
+      pattern: '/tags/{*path}',
+      params: { path: ['frontend', 'typescript', 'routing'] },
+      options: { delimiter: '.' },
+      expects: '/tags/frontend.typescript.routing',
+    },
+    {
+      pattern: '.tags.{*path}',
+      params: { path: ['frontend', 'typescript', 'routing'] },
+      options: { delimiter: '.' },
+      expects: '.tags.frontend.typescript.routing',
+    },
+    {
+      pattern: '.page.settings.{number:range(1,100)?}',
+      params: {},
+      options: { delimiter: '.' },
+      expects: '.page.settings',
+    },
   ] satisfies {
     pattern: string;
     params: Record<string, TypeOrArray<string | number>>;
+    options?: CompileOptions;
     expects: string;
-  }[])('should compile route pattern $pattern accordingly', ({ pattern, params, expects }) => {
-    expect(compile(pattern)(params)).toEqual(expects);
-  });
+  }[])(
+    'should compile route pattern $pattern accordingly',
+    ({ pattern, params, options, expects }) => {
+      expect(compile(pattern, options)(params)).toEqual(expects);
+    },
+  );
 
   it.each([
     {

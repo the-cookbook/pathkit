@@ -66,6 +66,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "playground": "pnpm build && pnpm --filter pathkit-playground start",
+    "playground:typecheck": "pnpm --filter pathkit-playground typecheck",
     "prepack": "npm run build",
     "prepare": "husky"
   },

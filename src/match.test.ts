@@ -3,6 +3,10 @@ import { registerConstraint, unregisterConstraint } from './constraints/registry
 import type { ConstraintValidation } from './contracts';
 
 describe('match', () => {
+  afterEach(() => {
+    unregisterConstraint('int');
+  });
+
   it('should throw error on wrong route pattern', () => {
     expect(() => match('/{:hello}')).toThrow();
   });
@@ -51,6 +55,43 @@ describe('match', () => {
     ).toEqual({
       match: true,
       params: { lang: 'en' },
+    });
+  });
+
+  it('should throw built-in constraint validation error when strict mode is enabled', () => {
+    const brokenInt: ConstraintValidation = Object.assign(
+      (param: string) => {
+        throw new Error(`Parameter "${param}" failed runtime validation`);
+      },
+      {
+        verify: () => undefined,
+        toRegExp: () => '\\d+',
+      },
+    );
+
+    registerConstraint('int', brokenInt);
+
+    expect(() => {
+      match('/users/{id:int}', { strict: true })('/users/123');
+    }).toThrow('Parameter "id" failed runtime validation');
+  });
+
+  it('should not throw built-in constraint validation error when strict mode is disabled', () => {
+    const brokenInt: ConstraintValidation = Object.assign(
+      (param: string) => {
+        throw new Error(`Parameter "${param}" failed runtime validation`);
+      },
+      {
+        verify: () => undefined,
+        toRegExp: () => '\\d+',
+      },
+    );
+
+    registerConstraint('int', brokenInt);
+
+    expect(match('/users/{id:int}')('/users/123')).toEqual({
+      match: false,
+      params: null,
     });
   });
 
@@ -114,7 +155,7 @@ describe('match', () => {
     {
       pattern: '/search/{page?}/{term?}',
       path: '/search',
-      matches: { match: true, params: { page: undefined, videos: undefined } },
+      matches: { match: true, params: { page: undefined, term: undefined } },
     },
     {
       pattern: '/search/{page?}/{term?}',
@@ -127,7 +168,7 @@ describe('match', () => {
       matches: { match: true, params: { page: 'videos', term: 'newest' } },
     },
   ])('should match route pattern $pattern', ({ pattern, path, matches }) => {
-    expect(match(pattern, { delimiter: '.' })(path)).toEqual(matches);
+    expect(match(pattern)(path)).toEqual(matches);
   });
 
   it.each([
@@ -177,7 +218,7 @@ describe('match', () => {
       matches: { match: true, params: { path: encodeURIComponent('foo/bar') } },
     },
   ])('should match route pattern with encoded params', ({ pattern, path, matches }) => {
-    expect(match(pattern, { delimiter: '.' })(path)).toEqual(matches);
+    expect(match(pattern)(path)).toEqual(matches);
   });
 
   describe('custom constraints', () => {
@@ -231,6 +272,79 @@ describe('match', () => {
       registerConstraint('uuidish', constraint);
 
       expect(match('/users/{id:uuidish}')('/users/abcdef')).toEqual({
+        match: false,
+        params: null,
+      });
+    });
+
+    it('should throw custom constraint validation error when strict mode is enabled', () => {
+      const constraint: ConstraintValidation = Object.assign(
+        (param: string, value: string | number | boolean | undefined) => {
+          if (value !== 'valid') {
+            throw new Error(`Parameter "${param}" must be valid`);
+          }
+        },
+        {
+          verify: () => undefined,
+          toRegExp: () => '[a-z]+',
+        },
+      );
+
+      registerConstraint('uuidish', constraint);
+
+      expect(() => {
+        match('/users/{id:uuidish}', { strict: true })('/users/invalid');
+      }).toThrow('Parameter "id" must be valid');
+    });
+
+    it('should not throw custom constraint validation error when strict mode is disabled', () => {
+      const constraint: ConstraintValidation = Object.assign(
+        (param: string, value: string | number | boolean | undefined) => {
+          if (value !== 'valid') {
+            throw new Error(`Parameter "${param}" must be valid`);
+          }
+        },
+        {
+          verify: () => undefined,
+          toRegExp: () => '[a-z]+',
+        },
+      );
+
+      registerConstraint('uuidish', constraint);
+
+      expect(match('/users/{id:uuidish}')('/users/invalid')).toEqual({
+        match: false,
+        params: null,
+      });
+    });
+
+    it('should match custom constraint when strict mode is enabled and value is valid', () => {
+      const constraint: ConstraintValidation = Object.assign(
+        (param: string, value: string | number | boolean | undefined) => {
+          if (value !== 'valid') {
+            throw new Error(`Parameter "${param}" must be valid`);
+          }
+        },
+        {
+          verify: () => undefined,
+          toRegExp: () => '[a-z]+',
+        },
+      );
+
+      registerConstraint('uuidish', constraint);
+
+      expect(match('/users/{id:uuidish}', { strict: true })('/users/valid')).toEqual({
+        match: true,
+        params: {
+          id: 'valid',
+        },
+      });
+    });
+
+    it('should not throw in strict mode when regexp does not match', () => {
+      registerConstraint('uuidish', uuidish);
+
+      expect(match('/users/{id:uuidish}', { strict: true })('/users/not-valid')).toEqual({
         match: false,
         params: null,
       });

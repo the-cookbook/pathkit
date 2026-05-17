@@ -3,6 +3,7 @@ import validateConstraints from './validate-constraints';
 import { isLiteralToken, isParameterToken } from './utils/segment-filters';
 import { is } from './utils/is';
 import { typeOf } from './utils/type-of';
+import escapeRegex from './utils/escape-regex';
 import type { TypeOrArray } from './contracts';
 
 interface CompileOptions {
@@ -22,17 +23,19 @@ const defaultOptions: Required<CompileOptions> = {
 
 const buildPruneRegex = (options: Required<CompileOptions>): RegExp => {
   const { delimiter, prune } = options;
+  const escapedDelimiter = escapeRegex(delimiter);
 
   const behaviour: Exclude<CompileOptions['prune'], 'all'>[] =
     prune === 'all' ? ['trailing', 'duplication'] : [prune];
+
   const pattern: string[] = [];
 
   if (behaviour.includes('duplication')) {
-    pattern.push(`${delimiter}(?=${delimiter})`);
+    pattern.push(`${escapedDelimiter}(?=${escapedDelimiter})`);
   }
 
   if (behaviour.includes('trailing')) {
-    pattern.push(`(?<!^)${delimiter}$`);
+    pattern.push(`(?<!^)${escapedDelimiter}$`);
   }
 
   return new RegExp(pattern.join('|'), 'g');
