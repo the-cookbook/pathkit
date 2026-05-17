@@ -1,5 +1,8 @@
 # `@cookbook/pathkit`
 
+[![npm version](https://img.shields.io/npm/v/@cookbook/pathkit.svg)](https://www.npmjs.com/package/@cookbook/pathkit)
+[![CI](https://github.com/the-cookbook/pathkit/actions/workflows/ci.yml/badge.svg)](https://github.com/the-cookbook/pathkit/actions/workflows/ci.yml)
+
 A lightweight route compiler, matcher, tokenizer, and validation toolkit for JavaScript and TypeScript.
 
 `@cookbook/pathkit` provides a predictable and extensible route pattern system with support for:
