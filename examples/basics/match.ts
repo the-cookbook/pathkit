@@ -1,4 +1,4 @@
-import { match } from '@the-cookbook/pathkit';
+import { match } from '@cookbook/pathkit';
 
 const matchUser = match('/users/{userId:int}');
 

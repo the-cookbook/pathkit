@@ -58,7 +58,7 @@ importers:
 
   playground:
     dependencies:
-      '@the-cookbook/pathkit':
+      '@cookbook/pathkit':
         specifier: workspace:*
         version: link:..
     devDependencies:

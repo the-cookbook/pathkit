@@ -1,4 +1,4 @@
-import { compile } from '@the-cookbook/pathkit';
+import { compile } from '@cookbook/pathkit';
 
 const routes = {
   dashboard: compile('/dashboard'),

@@ -1,4 +1,4 @@
-import { compile, match } from '@the-cookbook/pathkit';
+import { compile, match } from '@cookbook/pathkit';
 
 const localizedProductPath = compile('/{locale:list(en|pt|de)}/products/{slug:regex([a-z0-9-]+)}');
 

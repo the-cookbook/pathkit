@@ -1,4 +1,4 @@
-import { compile } from '@the-cookbook/pathkit';
+import { compile } from '@cookbook/pathkit';
 
 const postPath = compile('/blog/{year:range(2000,2030)}/{slug:regex([a-z0-9-]+)}');
 

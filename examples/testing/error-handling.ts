@@ -1,4 +1,4 @@
-import { compile, match, validateRoute } from '@the-cookbook/pathkit';
+import { compile, match, validateRoute } from '@cookbook/pathkit';
 
 try {
   validateRoute('/users/{id:unknown}');

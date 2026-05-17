@@ -4,7 +4,7 @@ import {
   registerConstraint,
   resetConstraints,
   type ConstraintValidation,
-} from '@the-cookbook/pathkit';
+} from '@cookbook/pathkit';
 
 const assertThrows = (callback: () => void, expectedMessage: string, message: string): void => {
   try {

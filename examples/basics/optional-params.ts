@@ -1,4 +1,4 @@
-import { compile, match } from '@the-cookbook/pathkit';
+import { compile, match } from '@cookbook/pathkit';
 
 const compileSearch = compile('/search/{category?}/{term?}');
 

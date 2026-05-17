@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@the-cookbook/pathkit": "workspace:*"
+    "@cookbook/pathkit": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.20.0",

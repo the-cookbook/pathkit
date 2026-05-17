@@ -1,4 +1,4 @@
-import { compile, match } from '@the-cookbook/pathkit';
+import { compile, match } from '@cookbook/pathkit';
 
 const articlePath = compile('/articles/{year:range(2000,2030)}/{slug:regex([a-z0-9-]+)}');
 

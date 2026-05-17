@@ -4,8 +4,8 @@ import {
   registerConstraint,
   resetConstraints,
   unregisterConstraint,
-} from '@the-cookbook/pathkit';
-import type { ConstraintValidation } from '@the-cookbook/pathkit';
+} from '@cookbook/pathkit';
+import type { ConstraintValidation } from '@cookbook/pathkit';
 
 const noop: ConstraintValidation = Object.assign(() => undefined, {
   verify: () => undefined,

@@ -1,4 +1,4 @@
-import { compile, match } from '@the-cookbook/pathkit';
+import { compile, match } from '@cookbook/pathkit';
 
 const assetPath = compile('/assets/{*path}');
 

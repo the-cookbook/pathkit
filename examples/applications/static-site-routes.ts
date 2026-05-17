@@ -1,4 +1,4 @@
-import { compile } from '@the-cookbook/pathkit';
+import { compile } from '@cookbook/pathkit';
 
 const docsPath = compile('/docs/{section}/{slug}');
 

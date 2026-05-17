@@ -1,4 +1,4 @@
-import { validateRoute } from '@the-cookbook/pathkit';
+import { validateRoute } from '@cookbook/pathkit';
 
 const routes = [
   '/users/{id:int}',

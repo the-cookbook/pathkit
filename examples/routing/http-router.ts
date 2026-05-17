@@ -1,4 +1,4 @@
-import { match } from '@the-cookbook/pathkit';
+import { match } from '@cookbook/pathkit';
 
 type RequestLike = {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';

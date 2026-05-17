@@ -1,8 +1,8 @@
-# `@the-cookbook/pathkit`
+# `@cookbook/pathkit`
 
 A lightweight route compiler, matcher, tokenizer, and validation toolkit for JavaScript and TypeScript.
 
-`@the-cookbook/pathkit` provides a predictable and extensible route pattern system with support for:
+`@cookbook/pathkit` provides a predictable and extensible route pattern system with support for:
 
 - Route compilation
 - Route matching
@@ -91,22 +91,22 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
 # Installation
 
 ```bash
-pnpm add @the-cookbook/pathkit
+pnpm add @cookbook/pathkit
 ```
 
 ```bash
-npm install @the-cookbook/pathkit
+npm install @cookbook/pathkit
 ```
 
 ```bash
-yarn add @the-cookbook/pathkit
+yarn add @cookbook/pathkit
 ```
 
 ---
 
 # Inspiration
 
-`@the-cookbook/pathkit` is heavily inspired by the Microsoft ASP.NET route template syntax and route constraint system.
+`@cookbook/pathkit` is heavily inspired by the Microsoft ASP.NET route template syntax and route constraint system.
 
 Reference:
 
@@ -128,7 +128,7 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 
 # Comparison with `path-to-regexp`
 
-| Feature                            | @the-cookbook/pathkit | path-to-regexp                  |
+| Feature                            | @cookbook/pathkit | path-to-regexp                  |
 | ---------------------------------- | --------------------- | ------------------------------- |
 | Route compilation                  | Yes                   | Yes                             |
 | Route matching                     | Yes                   | Yes                             |
@@ -148,7 +148,7 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 
 `path-to-regexp` focuses primarily on transforming path patterns into regular expressions.
 
-`@the-cookbook/pathkit` focuses on complete route tooling:
+`@cookbook/pathkit` focuses on complete route tooling:
 
 - Route parsing
 - Validation
@@ -246,7 +246,7 @@ declare const compile: (
 ## Example
 
 ```ts
-import { compile } from '@the-cookbook/pathkit';
+import { compile } from '@cookbook/pathkit';
 
 const toUser = compile('/users/{id}');
 
@@ -379,7 +379,7 @@ declare const match: (route: string, options?: MatchOptions) => (path: string) =
 ## Example
 
 ```ts
-import { match } from '@the-cookbook/pathkit';
+import { match } from '@cookbook/pathkit';
 
 const matcher = match('/users/{id:int}');
 
@@ -593,7 +593,7 @@ declare const tokenize: (route: string) => RouteSegment[];
 ## Example
 
 ```ts
-import { tokenize } from '@the-cookbook/pathkit';
+import { tokenize } from '@cookbook/pathkit';
 
 tokenize('/users/{id:int}');
 ```
@@ -636,7 +636,7 @@ declare const validateRoute: (route: string) => void;
 ## Example
 
 ```ts
-import { validateRoute } from '@the-cookbook/pathkit';
+import { validateRoute } from '@cookbook/pathkit';
 
 validateRoute('/users/{id:int}');
 ```
@@ -869,7 +869,7 @@ If a constraint with the same name already exists, it is replaced.
 ### Example
 
 ```ts
-import { match, registerConstraint, type ConstraintValidation } from '@the-cookbook/pathkit';
+import { match, registerConstraint, type ConstraintValidation } from '@cookbook/pathkit';
 
 const slug: ConstraintValidation = Object.assign(
   (param: string, value: string | number | boolean | undefined) => {
@@ -952,7 +952,7 @@ declare const unregisterConstraint: (name: string) => void;
 ### Example
 
 ```ts
-import { unregisterConstraint } from '@the-cookbook/pathkit';
+import { unregisterConstraint } from '@cookbook/pathkit';
 
 unregisterConstraint('slug');
 ```
@@ -972,7 +972,7 @@ declare const hasConstraint: (name: string) => boolean;
 ### Example
 
 ```ts
-import { hasConstraint } from '@the-cookbook/pathkit';
+import { hasConstraint } from '@cookbook/pathkit';
 
 hasConstraint('slug');
 ```
@@ -992,7 +992,7 @@ declare const getConstraint: (name: string) => ConstraintValidation | undefined;
 ### Example
 
 ```ts
-import { getConstraint } from '@the-cookbook/pathkit';
+import { getConstraint } from '@cookbook/pathkit';
 
 const constraint = getConstraint('slug');
 ```
@@ -1018,7 +1018,7 @@ declare const resetConstraints: () => void;
 ## Route Segments
 
 ```ts
-import type { RouteSegment, LiteralSegment, ParameterSegment } from '@the-cookbook/pathkit';
+import type { RouteSegment, LiteralSegment, ParameterSegment } from '@cookbook/pathkit';
 ```
 
 ---
@@ -1026,7 +1026,7 @@ import type { RouteSegment, LiteralSegment, ParameterSegment } from '@the-cookbo
 ## Constraints
 
 ```ts
-import type { Constraint, ConstraintValidation } from '@the-cookbook/pathkit';
+import type { Constraint, ConstraintValidation } from '@cookbook/pathkit';
 ```
 
 ---
@@ -1034,7 +1034,7 @@ import type { Constraint, ConstraintValidation } from '@the-cookbook/pathkit';
 ## Match Results
 
 ```ts
-import type { MatchedParam } from '@the-cookbook/pathkit';
+import type { MatchedParam } from '@cookbook/pathkit';
 ```
 
 ---
@@ -1044,7 +1044,7 @@ import type { MatchedParam } from '@the-cookbook/pathkit';
 ## Root Import
 
 ```ts
-import { compile, match, tokenize, validateRoute } from '@the-cookbook/pathkit';
+import { compile, match, tokenize, validateRoute } from '@cookbook/pathkit';
 ```
 
 ---
@@ -1052,7 +1052,7 @@ import { compile, match, tokenize, validateRoute } from '@the-cookbook/pathkit';
 ## Constraint Namespace
 
 ```ts
-import { constraints } from '@the-cookbook/pathkit';
+import { constraints } from '@cookbook/pathkit';
 
 constraints.registerConstraint(...);
 ```
@@ -1062,8 +1062,8 @@ constraints.registerConstraint(...);
 ## Deep Imports
 
 ```ts
-import match from '@the-cookbook/pathkit/match';
-import compile from '@the-cookbook/pathkit/compile';
+import match from '@cookbook/pathkit/match';
+import compile from '@cookbook/pathkit/compile';
 ```
 
 ---

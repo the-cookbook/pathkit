@@ -1,6 +1,6 @@
-# `@the-cookbook/pathkit` Examples
+# `@cookbook/pathkit` Examples
 
-Real-world usage examples for `@the-cookbook/pathkit`.
+Real-world usage examples for `@cookbook/pathkit`.
 
 ## Structure
 
@@ -13,12 +13,12 @@ Real-world usage examples for `@the-cookbook/pathkit`.
 Most examples use root imports:
 
 ```ts
-import { compile, match } from '@the-cookbook/pathkit';
+import { compile, match } from '@cookbook/pathkit';
 ```
 
 Deep imports are also supported:
 
 ```ts
-import match from '@the-cookbook/pathkit/match';
-import compile from '@the-cookbook/pathkit/compile';
+import match from '@cookbook/pathkit/match';
+import compile from '@cookbook/pathkit/compile';
 ```

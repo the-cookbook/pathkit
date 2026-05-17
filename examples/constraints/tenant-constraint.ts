@@ -1,5 +1,5 @@
-import { match, registerConstraint, resetConstraints } from '@the-cookbook/pathkit';
-import type { ConstraintValidation } from '@the-cookbook/pathkit';
+import { match, registerConstraint, resetConstraints } from '@cookbook/pathkit';
+import type { ConstraintValidation } from '@cookbook/pathkit';
 
 const allowedTenants = new Set(['acme', 'globex', 'initech']);
 

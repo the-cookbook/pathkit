@@ -1,4 +1,4 @@
-import { compile } from '@the-cookbook/pathkit';
+import { compile } from '@cookbook/pathkit';
 
 const userProfilePath = compile('/users/{userId:int}/profile');
 const settingsPath = compile('/users/{userId:int}/settings/{section?}');

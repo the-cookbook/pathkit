@@ -1,4 +1,4 @@
-import { compile, match } from '@the-cookbook/pathkit';
+import { compile, match } from '@cookbook/pathkit';
 
 const projectPath = compile('/projects/{projectId:int}');
 const issuePath = compile('/projects/{projectId:int}/issues/{issueId:int}');

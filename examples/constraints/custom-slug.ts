@@ -1,5 +1,5 @@
-import { compile, match, registerConstraint, resetConstraints } from '@the-cookbook/pathkit';
-import type { ConstraintValidation } from '@the-cookbook/pathkit';
+import { compile, match, registerConstraint, resetConstraints } from '@cookbook/pathkit';
+import type { ConstraintValidation } from '@cookbook/pathkit';
 
 const slug: ConstraintValidation = Object.assign(
   (paramName: string, value: string | number | boolean | undefined) => {

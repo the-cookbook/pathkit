@@ -1,5 +1,5 @@
-import { registerConstraint, resetConstraints } from '@the-cookbook/pathkit';
-import type { ConstraintValidation } from '@the-cookbook/pathkit';
+import { registerConstraint, resetConstraints } from '@cookbook/pathkit';
+import type { ConstraintValidation } from '@cookbook/pathkit';
 
 const mockConstraint: ConstraintValidation = Object.assign(() => undefined, {
   verify: () => undefined,
