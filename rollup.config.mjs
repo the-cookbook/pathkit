@@ -13,6 +13,10 @@ const entries = {
   'constraints/index': 'src/constraints/index.ts',
 };
 
+const declarationEntries = Object.fromEntries(
+  Object.keys(entries).map((name) => [name, `dist/types/${name}.d.ts`]),
+);
+
 export default [
   {
     input: entries,
@@ -23,6 +27,7 @@ export default [
         format: 'esm',
         sourcemap: true,
         entryFileNames: '[name].js',
+        chunkFileNames: 'chunks/[name]-[hash].js',
       },
       {
         dir: 'dist',
@@ -30,6 +35,7 @@ export default [
         sourcemap: true,
         exports: 'named',
         entryFileNames: '[name].cjs',
+        chunkFileNames: 'chunks/[name]-[hash].cjs',
       },
     ],
     plugins: [
@@ -42,9 +48,7 @@ export default [
     ],
   },
   {
-    input: Object.fromEntries(
-      Object.keys(entries).map((name) => [name, `dist/types/${name}.d.ts`]),
-    ),
+    input: declarationEntries,
     output: {
       dir: 'dist',
       format: 'esm',

@@ -1,6 +1,7 @@
 # Source
 src
 examples
+playground
 coverage
 .vscode
 .idea
@@ -8,8 +9,15 @@ coverage
 # Tests
 *.test.ts
 *.spec.ts
+*.test.d.ts
+*.test.d.ts.map
+*.spec.d.ts
+*.spec.d.ts.map
 vitest.config.*
 jest.config.*
+
+# Build internals
+dist/types
 
 # Tooling
 tsconfig.json
@@ -17,6 +25,7 @@ tsconfig.*.json
 eslint.config.*
 .prettierrc*
 .editorconfig
+rollup.config.*
 
 # Environment
 .env
