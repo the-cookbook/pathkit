@@ -88,7 +88,7 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
 
 ```bash
 pnpm add @the-cookbook/pathkit
-````
+```
 
 ```bash
 npm install @the-cookbook/pathkit
@@ -106,7 +106,7 @@ yarn add @the-cookbook/pathkit
 
 Reference:
 
-* ASP.NET Core Route Constraints Documentation
+- ASP.NET Core Route Constraints Documentation
   [https://learn.microsoft.com/en-us/aspnet/core/fundamentals/routing?view=aspnetcore-9.0#route-constraints](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/routing?view=aspnetcore-9.0#route-constraints)
 
 Examples:
@@ -145,27 +145,27 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 
 `@the-cookbook/pathkit` focuses on complete route tooling:
 
-* Route parsing
-* Validation
-* Runtime-safe constraints
-* Typed route segments
-* Route compilation
-* Route matching
-* Extensibility through runtime constraint registration
+- Route parsing
+- Validation
+- Runtime-safe constraints
+- Typed route segments
+- Route compilation
+- Route matching
+- Extensibility through runtime constraint registration
 
 ---
 
 # Features
 
-* Zero dependencies
-* Small runtime footprint
-* Runtime-safe route validation
-* Extensible constraint registry
-* Functional API
-* Framework agnostic
-* SSR compatible
-* ESM + CommonJS exports
-* Strong TypeScript support
+- Zero dependencies
+- Small runtime footprint
+- Runtime-safe route validation
+- Extensible constraint registry
+- Functional API
+- Framework agnostic
+- SSR compatible
+- ESM + CommonJS exports
+- Strong TypeScript support
 
 ---
 
@@ -228,10 +228,7 @@ interface CompileOptions {
 type TypeOrArray<T> = T | T[];
 
 interface CompileParams {
-  [key: string]:
-    | TypeOrArray<string | number | boolean>
-    | null
-    | undefined;
+  [key: string]: TypeOrArray<string | number | boolean> | null | undefined;
 }
 
 declare const compile: (
@@ -326,10 +323,10 @@ Controls route cleanup behavior.
 Available values:
 
 ```ts
-'all'
-'duplication'
-'trailing'
-false
+'all';
+'duplication';
+'trailing';
+false;
 ```
 
 Example:
@@ -361,10 +358,7 @@ interface MatchResult {
   params: MatchedParam | null;
 }
 
-declare const match: (
-  route: string,
-  options?: MatchOptions,
-) => (path: string) => MatchResult;
+declare const match: (route: string, options?: MatchOptions) => (path: string) => MatchResult;
 ```
 
 ## Example
@@ -504,9 +498,7 @@ interface ParameterSegment {
 
 type RouteSegment = LiteralSegment | ParameterSegment;
 
-declare const tokenize: (
-  route: string,
-) => RouteSegment[];
+declare const tokenize: (route: string) => RouteSegment[];
 ```
 
 ## Example
@@ -537,7 +529,7 @@ Returns:
       },
     ],
   },
-]
+];
 ```
 
 ---
@@ -549,9 +541,7 @@ Validates route patterns before runtime usage.
 ## Signature
 
 ```ts
-declare const validateRoute: (
-  route: string,
-) => void;
+declare const validateRoute: (route: string) => void;
 ```
 
 ## Example
@@ -579,8 +569,8 @@ Constraints validate parameter values during `compile()` and `match()`.
 
 Each constraint can also provide:
 
-* `verify()` to validate the route constraint configuration itself
-* `toRegExp()` to generate the matching pattern used by `match()`
+- `verify()` to validate the route constraint configuration itself
+- `toRegExp()` to generate the matching pattern used by `match()`
 
 ---
 
@@ -588,20 +578,11 @@ Each constraint can also provide:
 
 ```ts
 interface ConstraintValidation {
-  (
-    paramName: string,
-    value: string | number | boolean | undefined,
-    params: string,
-  ): void;
+  (paramName: string, value: string | number | boolean | undefined, params: string): void;
 
-  verify(
-    paramName: string,
-    params: string,
-  ): void;
+  verify(paramName: string, params: string): void;
 
-  toRegExp(
-    params: string,
-  ): string;
+  toRegExp(params: string): string;
 }
 ```
 
@@ -675,9 +656,9 @@ Validates that a numeric parameter is inside an inclusive range.
 
 ### Notes
 
-* `min` and `max` are required
-* The range is inclusive
-* Values are validated numerically
+- `min` and `max` are required
+- The range is inclusive
+- Values are validated numerically
 
 ---
 
@@ -714,9 +695,9 @@ Validates that a parameter matches one item from a pipe-separated list.
 
 ### Notes
 
-* Items are separated with `|`
-* Matching is exact
-* List values are also used to generate the matcher RegExp
+- Items are separated with `|`
+- Matching is exact
+- List values are also used to generate the matcher RegExp
 
 ---
 
@@ -752,9 +733,9 @@ Validates that a parameter matches a custom regular expression.
 
 ### Notes
 
-* The regex is used by both `compile()` validation and `match()` route matching
-* Do not include route delimiters unless the parameter is intended to match them
-* For cross-segment matching, use a wildcard parameter instead
+- The regex is used by both `compile()` validation and `match()` route matching
+- Do not include route delimiters unless the parameter is intended to match them
+- For cross-segment matching, use a wildcard parameter instead
 
 ---
 
@@ -768,20 +749,11 @@ A custom constraint must implement `ConstraintValidation`.
 
 ```ts
 interface ConstraintValidation {
-  (
-    paramName: string,
-    value: string | number | boolean | undefined,
-    params: string,
-  ): void;
+  (paramName: string, value: string | number | boolean | undefined, params: string): void;
 
-  verify(
-    paramName: string,
-    params: string,
-  ): void;
+  verify(paramName: string, params: string): void;
 
-  toRegExp(
-    params: string,
-  ): string;
+  toRegExp(params: string): string;
 }
 ```
 
@@ -794,36 +766,22 @@ Registers or replaces a constraint.
 ### Signature
 
 ```ts
-declare const registerConstraint: (
-  name: string,
-  constraint: ConstraintValidation,
-) => void;
+declare const registerConstraint: (name: string, constraint: ConstraintValidation) => void;
 ```
 
 ### Example
 
 ```ts
-import {
-  match,
-  registerConstraint,
-  type ConstraintValidation,
-} from '@the-cookbook/pathkit';
+import { match, registerConstraint, type ConstraintValidation } from '@the-cookbook/pathkit';
 
 const slug: ConstraintValidation = Object.assign(
-  (
-    param: string,
-    value: string | number | boolean | undefined,
-  ) => {
+  (param: string, value: string | number | boolean | undefined) => {
     if (typeof value !== 'string') {
-      throw new Error(
-        `Parameter "${param}" must be a string`,
-      );
+      throw new Error(`Parameter "${param}" must be a string`);
     }
 
     if (!/^[a-z0-9-]+$/.test(value)) {
-      throw new Error(
-        `Parameter "${param}" must be a valid slug`,
-      );
+      throw new Error(`Parameter "${param}" must be a valid slug`);
     }
   },
   {
@@ -849,17 +807,13 @@ Removes a runtime constraint.
 ### Signature
 
 ```ts
-declare const unregisterConstraint: (
-  name: string,
-) => void;
+declare const unregisterConstraint: (name: string) => void;
 ```
 
 ### Example
 
 ```ts
-import {
-  unregisterConstraint,
-} from '@the-cookbook/pathkit';
+import { unregisterConstraint } from '@the-cookbook/pathkit';
 
 unregisterConstraint('slug');
 ```
@@ -873,17 +827,13 @@ Checks whether a constraint exists.
 ### Signature
 
 ```ts
-declare const hasConstraint: (
-  name: string,
-) => boolean;
+declare const hasConstraint: (name: string) => boolean;
 ```
 
 ### Example
 
 ```ts
-import {
-  hasConstraint,
-} from '@the-cookbook/pathkit';
+import { hasConstraint } from '@the-cookbook/pathkit';
 
 hasConstraint('slug');
 ```
@@ -897,17 +847,13 @@ Returns a registered constraint.
 ### Signature
 
 ```ts
-declare const getConstraint: (
-  name: string,
-) => ConstraintValidation | undefined;
+declare const getConstraint: (name: string) => ConstraintValidation | undefined;
 ```
 
 ### Example
 
 ```ts
-import {
-  getConstraint,
-} from '@the-cookbook/pathkit';
+import { getConstraint } from '@the-cookbook/pathkit';
 
 const constraint = getConstraint('slug');
 ```
@@ -933,11 +879,7 @@ declare const resetConstraints: () => void;
 ## Route Segments
 
 ```ts
-import type {
-  RouteSegment,
-  LiteralSegment,
-  ParameterSegment,
-} from '@the-cookbook/pathkit';
+import type { RouteSegment, LiteralSegment, ParameterSegment } from '@the-cookbook/pathkit';
 ```
 
 ---
@@ -945,10 +887,7 @@ import type {
 ## Constraints
 
 ```ts
-import type {
-  Constraint,
-  ConstraintValidation,
-} from '@the-cookbook/pathkit';
+import type { Constraint, ConstraintValidation } from '@the-cookbook/pathkit';
 ```
 
 ---
@@ -956,9 +895,7 @@ import type {
 ## Match Results
 
 ```ts
-import type {
-  MatchedParam,
-} from '@the-cookbook/pathkit';
+import type { MatchedParam } from '@the-cookbook/pathkit';
 ```
 
 ---
@@ -968,12 +905,7 @@ import type {
 ## Root Import
 
 ```ts
-import {
-  compile,
-  match,
-  tokenize,
-  validateRoute,
-} from '@the-cookbook/pathkit';
+import { compile, match, tokenize, validateRoute } from '@the-cookbook/pathkit';
 ```
 
 ---
@@ -1021,13 +953,13 @@ Parameter "page" must be one of: home, dashboard
 
 # Design Goals
 
-* Predictable behavior
-* Minimal abstractions
-* Runtime safety
-* Composable APIs
-* Framework independence
-* Extensibility through constraints
-* Small API surface
+- Predictable behavior
+- Minimal abstractions
+- Runtime safety
+- Composable APIs
+- Framework independence
+- Extensibility through constraints
+- Small API surface
 
 ---
 

@@ -31,13 +31,13 @@ const happen: Comparison = (a: ComparisonType): ReturnType<Comparison> => {
       return comparer(a, b) > 0;
     },
     lessThanOrEqual(b: ComparisonType): boolean {
-      return (this.lessThan(b) || this.equalTo(b));
+      return this.lessThan(b) || this.equalTo(b);
     },
     greaterThanOrEqual(b: ComparisonType): boolean {
-      return (this.greaterThan(b) || this.equalTo(b));
+      return this.greaterThan(b) || this.equalTo(b);
     },
     between(b: ComparisonType, c: ComparisonType): boolean {
-      return (this.greaterThanOrEqual(b) && this.lessThanOrEqual(c));
+      return this.greaterThanOrEqual(b) && this.lessThanOrEqual(c);
     },
   };
 };
