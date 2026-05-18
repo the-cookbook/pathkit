@@ -1,6 +1,7 @@
 # `@cookbook/pathkit`
 
 [![npm version](https://img.shields.io/npm/v/@cookbook/pathkit.svg)](https://www.npmjs.com/package/@cookbook/pathkit)
+[![npm downloads](https://img.shields.io/npm/dm/@cookbook/pathkit.svg)](https://www.npmjs.com/package/@cookbook/pathkit)
 [![CI](https://github.com/the-cookbook/pathkit/actions/workflows/ci.yml/badge.svg)](https://github.com/the-cookbook/pathkit/actions/workflows/ci.yml)
 
 A lightweight route compiler, matcher, tokenizer, and validation toolkit for JavaScript and TypeScript.
@@ -315,23 +316,32 @@ toPage({ type: 'settings' });
 
 ## delimiter
 
-Changes the array join delimiter.
+Changes the route segment delimiter used for wildcard joins and route normalization.
 
 ```ts
-compile('/tags/{*path}', {
+compile('namespace.{*path}', {
   delimiter: '.',
 })({
   path: ['frontend', 'typescript', 'routing'],
 });
 
-// /tags/frontend.typescript.routing
+// namespace.frontend.typescript.routing
+```
+
+This is useful for non-slash route styles such as:
+
+- dot-separated namespaces
+- event routing
+- CLI command patterns
+- message topics
+- internal identifiers
 ```
 
 ---
 
 ## prune
 
-Controls route cleanup behavior.
+Controls route cleanup behavior after compilation.
 
 Available values:
 
@@ -342,12 +352,58 @@ Available values:
 false;
 ```
 
-Example:
+### `'all'`
+
+Removes duplicated delimiters and trailing delimiters.
 
 ```ts
 compile('/hello//world/', {
   prune: 'all',
-});
+})();
+
+// /hello/world
+```
+
+---
+
+### `'duplication'`
+
+Removes only duplicated delimiters.
+
+```ts
+compile('/hello//world/', {
+  prune: 'duplication',
+})();
+
+// /hello/world/
+```
+
+---
+
+### `'trailing'`
+
+Removes only trailing delimiters.
+
+```ts
+compile('/hello//world/', {
+  prune: 'trailing',
+})();
+
+// /hello//world
+```
+
+---
+
+### `false`
+
+Disables all cleanup behavior.
+
+```ts
+compile('/hello//world/', {
+  prune: false,
+})();
+
+// /hello//world/
 ```
 
 ---
@@ -680,7 +736,7 @@ interface ConstraintValidation {
 
 ---
 
-## int
+## `int`
 
 Validates that a parameter is an integer.
 
@@ -720,7 +776,7 @@ Validates that a parameter is an integer.
 
 ---
 
-## range
+## `range`
 
 Validates that a numeric parameter is inside an inclusive range.
 
@@ -760,7 +816,7 @@ Validates that a numeric parameter is inside an inclusive range.
 
 ---
 
-## list
+## `list`
 
 Validates that a parameter matches one item from a pipe-separated list.
 
@@ -799,7 +855,7 @@ Validates that a parameter matches one item from a pipe-separated list.
 
 ---
 
-## regex
+## `regex`
 
 Validates that a parameter matches a custom regular expression.
 
