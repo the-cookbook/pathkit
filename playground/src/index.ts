@@ -1,9 +1,9 @@
 import {
   compile,
   match,
+  createConstraint,
   registerConstraint,
   resetConstraints,
-  type ConstraintValidation,
 } from '@cookbook/pathkit';
 
 const assertThrows = (callback: () => void, expectedMessage: string, message: string): void => {
@@ -109,8 +109,8 @@ assertEqual(
   'match() should support custom delimiters',
 );
 
-const slug: ConstraintValidation = Object.assign(
-  (paramName: string, value: string | number | boolean | undefined) => {
+const slug = createConstraint({
+  parse: (paramName, value, params) => {
     if (typeof value !== 'string') {
       throw new Error(`Parameter "${paramName}" must be a string`);
     }
@@ -119,11 +119,9 @@ const slug: ConstraintValidation = Object.assign(
       throw new Error(`Parameter "${paramName}" must be a valid slug`);
     }
   },
-  {
-    verify: () => undefined,
-    toRegExp: () => '[a-z0-9-]+',
-  },
-);
+  verify: () => undefined,
+  toRegExp: () => '[a-z0-9-]+',
+});
 
 registerConstraint('slug', slug);
 

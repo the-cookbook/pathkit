@@ -4,26 +4,32 @@ import type { ConstraintValidation } from '../contracts';
 import {
   getConstraint,
   hasConstraint,
+  createConstraint,
   registerConstraint,
   resetConstraints,
   unregisterConstraint,
 } from './registry';
 
-const slug: ConstraintValidation = Object.assign(
-  (param: string, value: string | number | boolean | undefined) => {
+const slug = createConstraint({
+  parse: (paramName, value) => {
     if (typeof value !== 'string') {
-      throw new Error(`Parameter "${param}" must be a string`);
+      throw new Error(`Parameter "${paramName}" must be a string`);
     }
 
     if (!/^[a-z0-9-]+$/.test(value)) {
-      throw new Error(`Parameter "${param}" must be a valid slug`);
+      throw new Error(`Parameter "${paramName}" must be a valid slug`);
     }
   },
-  {
-    verify: () => undefined,
-    toRegExp: () => '[a-z0-9-]+',
+  verify: (paramName, params) => {
+    if (params.trim().length) {
+      throw new Error(
+        `[Constraint] Constraint 'slug' declared for '${paramName}' does not accept parameters, ` +
+          `but got '(${params})'`,
+      );
+    }
   },
-);
+  toRegExp: () => '[a-z0-9-]+',
+});
 
 describe('constraints/registry', () => {
   afterEach(() => {
@@ -92,12 +98,14 @@ describe('constraints/registry', () => {
   });
 
   it('should allow replacing an existing custom constraint', () => {
-    const first: ConstraintValidation = Object.assign(() => undefined, {
+    const first: ConstraintValidation = createConstraint({
+      parse: () => undefined,
       verify: () => undefined,
       toRegExp: () => 'first',
     });
 
-    const second: ConstraintValidation = Object.assign(() => undefined, {
+    const second: ConstraintValidation = createConstraint({
+      parse: () => undefined,
       verify: () => undefined,
       toRegExp: () => 'second',
     });
@@ -109,17 +117,15 @@ describe('constraints/registry', () => {
   });
 
   it('should allow overriding built-in constraints', () => {
-    const strictInt: ConstraintValidation = Object.assign(
-      (param: string, value: string | number | boolean | undefined) => {
+    const strictInt = createConstraint({
+      parse: (param, value) => {
         if (value !== '42') {
           throw new Error(`Parameter "${param}" must be 42`);
         }
       },
-      {
-        verify: () => undefined,
-        toRegExp: () => '42',
-      },
-    );
+      verify: () => undefined,
+      toRegExp: () => '42',
+    });
 
     registerConstraint('int', strictInt);
 
@@ -139,10 +145,7 @@ describe('constraints/registry', () => {
   it('should restore built-in constraints after reset', () => {
     registerConstraint(
       'int',
-      Object.assign(() => undefined, {
-        verify: () => undefined,
-        toRegExp: () => '42',
-      }),
+      createConstraint({ parse: () => undefined, verify: () => undefined, toRegExp: () => '42' }),
     );
 
     resetConstraints();

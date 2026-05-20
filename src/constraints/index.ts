@@ -8,6 +8,7 @@ export {
   getRegisteredConstraint,
   hasConstraint,
   hasRegisteredConstraint,
+  createConstraint,
   registerConstraint,
   unregisterConstraint,
   resetConstraints,

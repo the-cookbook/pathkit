@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "dist"
   },
   "include": ["src/**/*.ts"],
   "exclude": [
@@ -12,6 +12,6 @@
     "coverage",
     "examples",
     "playground",
-    "node_modules",
-  ],
+    "node_modules"
+  ]
 }

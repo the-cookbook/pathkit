@@ -1,13 +1,14 @@
 import {
   getConstraint,
   hasConstraint,
+  createConstraint,
   registerConstraint,
   resetConstraints,
   unregisterConstraint,
 } from '@cookbook/pathkit';
-import type { ConstraintValidation } from '@cookbook/pathkit';
 
-const noop: ConstraintValidation = Object.assign(() => undefined, {
+const noop = createConstraint({
+  parse: (paramName, value, params) => {},
   verify: () => undefined,
   toRegExp: () => '[^/]+',
 });

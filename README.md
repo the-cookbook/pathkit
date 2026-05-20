@@ -133,22 +133,22 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 # Comparison with `path-to-regexp`
 
 | Feature                            | @cookbook/pathkit | path-to-regexp                  |
-| ---------------------------------- | --------------------- | ------------------------------- |
-| Route compilation                  | Yes                   | Yes                             |
-| Route matching                     | Yes                   | Yes                             |
-| Route tokenization                 | Yes                   | Partial                         |
-| Route validation                   | Yes                   | No                              |
-| Runtime constraint system          | Yes                   | No                              |
-| Built-in constraints               | Yes                   | No                              |
-| Custom constraints                 | Yes                   | Limited/custom parsing required |
-| Optional parameters                | Yes                   | Yes                             |
-| Wildcard parameters                | Yes                   | Yes                             |
-| Parameter type enforcement         | Yes                   | No                              |
-| Strict match validation            | Yes                   | No                              |
-| TypeScript-first API               | Yes                   | Partial                         |
-| Framework agnostic                 | Yes                   | Yes                             |
-| Zero dependencies                  | Yes                   | No                              |
-| Runtime-safe constraint validation | Yes                   | No                              |
+| ---------------------------------- | ----------------- | ------------------------------- |
+| Route compilation                  | Yes               | Yes                             |
+| Route matching                     | Yes               | Yes                             |
+| Route tokenization                 | Yes               | Partial                         |
+| Route validation                   | Yes               | No                              |
+| Runtime constraint system          | Yes               | No                              |
+| Built-in constraints               | Yes               | No                              |
+| Custom constraints                 | Yes               | Limited/custom parsing required |
+| Optional parameters                | Yes               | Yes                             |
+| Wildcard parameters                | Yes               | Yes                             |
+| Parameter type enforcement         | Yes               | No                              |
+| Strict match validation            | Yes               | No                              |
+| TypeScript-first API               | Yes               | Partial                         |
+| Framework agnostic                 | Yes               | Yes                             |
+| Zero dependencies                  | Yes               | No                              |
+| Runtime-safe constraint validation | Yes               | No                              |
 
 `path-to-regexp` focuses primarily on transforming path patterns into regular expressions.
 
@@ -335,7 +335,8 @@ This is useful for non-slash route styles such as:
 - CLI command patterns
 - message topics
 - internal identifiers
-```
+
+````
 
 ---
 
@@ -350,7 +351,7 @@ Available values:
 'duplication';
 'trailing';
 false;
-```
+````
 
 ### `'all'`
 
@@ -897,19 +898,88 @@ Validates that a parameter matches a custom regular expression.
 
 Custom constraints are registered globally at runtime.
 
-A custom constraint must implement `ConstraintValidation`.
+A custom constraint must be created using `createConstraint`.
 
-## ConstraintValidation
+## `createConstraint`
+
+Creates a custom parameter constraint implementation.
+
+### Signature
 
 ```ts
-interface ConstraintValidation {
-  (paramName: string, value: string | number | boolean | undefined, params: string): void;
-
-  verify(paramName: string, params: string): void;
-
-  toRegExp(params: string): string;
-}
+declare const createConstraint = ({
+  parse,
+  verify,
+  toRegExp,
+}: {
+  parse: (...args: Parameters<ConstraintValidation>) => void;
+  verify: ConstraintValidation['verify'];
+  toRegExp: ConstraintValidation['toRegExp'];
+}) => ConstraintValidation;
 ```
+
+### Methods
+
+#### `parse`
+
+Implements the runtime validation logic for the parameter value.
+
+This method is executed when the route parameter is matched and receives:
+
+- `paramName`: parameter name
+- `value`: extracted parameter value
+- `params`: constraint configuration value
+
+Throw an error if the parameter value is invalid.
+
+#### `verify`
+
+Validates the constraint configuration itself.
+
+Use this method to ensure the constraint declaration is valid and correctly formatted before `parse` is executed.
+
+Typical use cases include:
+
+- validating constraint arguments
+- rejecting unsupported parameters
+- validating parameter formatting
+
+#### `toRegExp`
+
+Returns the regular expression pattern used to extract and match the parameter value from the route.
+
+The returned value must be a valid regex pattern string without delimiters.
+
+### Example
+
+```ts
+import { createConstraint } from '@cookbook/pathkit';
+
+const slug = createConstraint({
+  parse: (paramName, value) => {
+    if (typeof value !== 'string') {
+      throw new Error(`Parameter "${paramName}" must be a string`);
+    }
+
+    if (!/^[a-z0-9-]+$/.test(value)) {
+      throw new Error(`Parameter "${paramName}" must be a valid slug`);
+    }
+  },
+
+  verify: (paramName, params) => {
+    if (params.trim().length) {
+      throw new Error(
+        `[Constraint] Constraint 'slug' declared for '${paramName}' does not accept parameters, ` +
+          `but received '${params}'.`,
+      );
+    }
+  },
+
+  toRegExp: () => '[a-z0-9-]+',
+});
+```
+
+Note: `verify` is called automatically before `parse` is executed.
 
 ---
 
@@ -928,24 +998,7 @@ If a constraint with the same name already exists, it is replaced.
 ### Example
 
 ```ts
-import { match, registerConstraint, type ConstraintValidation } from '@cookbook/pathkit';
-
-const slug: ConstraintValidation = Object.assign(
-  (param: string, value: string | number | boolean | undefined) => {
-    if (typeof value !== 'string') {
-      throw new Error(`Parameter "${param}" must be a string`);
-    }
-
-    if (!/^[a-z0-9-]+$/.test(value)) {
-      throw new Error(`Parameter "${param}" must be a valid slug`);
-    }
-  },
-  {
-    verify: () => undefined,
-
-    toRegExp: () => '[a-z0-9-]+',
-  },
-);
+import { match, registerConstraint } from '@cookbook/pathkit';
 
 registerConstraint('slug', slug);
 

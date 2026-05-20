@@ -1,19 +1,16 @@
-import { match, registerConstraint, resetConstraints } from '@cookbook/pathkit';
-import type { ConstraintValidation } from '@cookbook/pathkit';
+import { match, createConstraint, registerConstraint, resetConstraints } from '@cookbook/pathkit';
 
 const allowedTenants = new Set(['acme', 'globex', 'initech']);
 
-const tenant: ConstraintValidation = Object.assign(
-  (paramName: string, value: string | number | boolean | undefined) => {
+const tenant = createConstraint({
+  parse: (paramName, value, params) => {
     if (typeof value !== 'string' || !allowedTenants.has(value)) {
       throw new Error(`Parameter "${paramName}" is not a valid tenant`);
     }
   },
-  {
-    verify: () => undefined,
-    toRegExp: () => '[a-z0-9-]+',
-  },
-);
+  verify: () => undefined,
+  toRegExp: () => '[a-z0-9-]+',
+});
 
 registerConstraint('tenant', tenant);
 

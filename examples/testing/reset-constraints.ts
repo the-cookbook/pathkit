@@ -1,7 +1,7 @@
-import { registerConstraint, resetConstraints } from '@cookbook/pathkit';
-import type { ConstraintValidation } from '@cookbook/pathkit';
+import { createConstraint, registerConstraint, resetConstraints } from '@cookbook/pathkit';
 
-const mockConstraint: ConstraintValidation = Object.assign(() => undefined, {
+const mockConstraint = createConstraint({
+  parse: () => undefined,
   verify: () => undefined,
   toRegExp: () => '[^/]+',
 });

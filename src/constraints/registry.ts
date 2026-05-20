@@ -22,6 +22,27 @@ const builtInConstraints: ConstraintRegistry = {
 
 const constraints = new Map<string, ConstraintValidation>(Object.entries(builtInConstraints));
 
+export const createConstraint = ({
+  parse,
+  verify,
+  toRegExp,
+}: {
+  parse: (...args: Parameters<ConstraintValidation>) => void;
+  verify: ConstraintValidation['verify'];
+  toRegExp: ConstraintValidation['toRegExp'];
+}): ConstraintValidation => {
+  const constraint: ConstraintValidation = (paramName, value, params) => {
+    constraint.verify(paramName, params);
+
+    parse(paramName, value, params);
+  };
+
+  constraint.verify = verify;
+  constraint.toRegExp = toRegExp;
+
+  return constraint;
+};
+
 export const registerConstraint = (name: string, constraint: ConstraintValidation): void => {
   constraints.set(name, constraint);
 };

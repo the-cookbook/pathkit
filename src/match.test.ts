@@ -1,6 +1,5 @@
 import match from './match';
-import { registerConstraint, unregisterConstraint } from './constraints/registry';
-import type { ConstraintValidation } from './contracts';
+import { createConstraint, registerConstraint, unregisterConstraint } from './constraints/registry';
 
 describe('match', () => {
   afterEach(() => {
@@ -59,15 +58,14 @@ describe('match', () => {
   });
 
   it('should throw built-in constraint validation error when strict mode is enabled', () => {
-    const brokenInt: ConstraintValidation = Object.assign(
-      (param: string) => {
+    const brokenInt = createConstraint({
+      parse: (param) => {
         throw new Error(`Parameter "${param}" failed runtime validation`);
       },
-      {
-        verify: () => undefined,
-        toRegExp: () => '\\d+',
-      },
-    );
+
+      verify: () => undefined,
+      toRegExp: () => '\\d+',
+    });
 
     registerConstraint('int', brokenInt);
 
@@ -77,15 +75,14 @@ describe('match', () => {
   });
 
   it('should not throw built-in constraint validation error when strict mode is disabled', () => {
-    const brokenInt: ConstraintValidation = Object.assign(
-      (param: string) => {
+    const brokenInt = createConstraint({
+      parse: (param: string) => {
         throw new Error(`Parameter "${param}" failed runtime validation`);
       },
-      {
-        verify: () => undefined,
-        toRegExp: () => '\\d+',
-      },
-    );
+
+      verify: () => undefined,
+      toRegExp: () => '\\d+',
+    });
 
     registerConstraint('int', brokenInt);
 
@@ -222,17 +219,16 @@ describe('match', () => {
   });
 
   describe('custom constraints', () => {
-    const uuidish: ConstraintValidation = Object.assign(
-      (param: string, value: string | number | boolean | undefined) => {
+    const uuidish = createConstraint({
+      parse: (param, value) => {
         if (typeof value !== 'string' || !/^[a-f0-9]{8}$/.test(value)) {
           throw new Error(`Parameter "${param}" must be uuidish`);
         }
       },
-      {
-        verify: () => undefined,
-        toRegExp: () => '[a-f0-9]{8}',
-      },
-    );
+
+      verify: () => undefined,
+      toRegExp: () => '[a-f0-9]{8}',
+    });
 
     afterEach(() => {
       unregisterConstraint('uuidish');
@@ -259,15 +255,13 @@ describe('match', () => {
     });
 
     it('should not match custom registered constraint when validation fails after regexp match', () => {
-      const constraint: ConstraintValidation = Object.assign(
-        () => {
+      const constraint = createConstraint({
+        parse: () => {
           throw new Error('forced failure');
         },
-        {
-          verify: () => undefined,
-          toRegExp: () => '[a-z]+',
-        },
-      );
+        verify: () => undefined,
+        toRegExp: () => '[a-z]+',
+      });
 
       registerConstraint('uuidish', constraint);
 
@@ -278,17 +272,15 @@ describe('match', () => {
     });
 
     it('should throw custom constraint validation error when strict mode is enabled', () => {
-      const constraint: ConstraintValidation = Object.assign(
-        (param: string, value: string | number | boolean | undefined) => {
+      const constraint = createConstraint({
+        parse: (param: string, value: string | number | boolean | undefined) => {
           if (value !== 'valid') {
             throw new Error(`Parameter "${param}" must be valid`);
           }
         },
-        {
-          verify: () => undefined,
-          toRegExp: () => '[a-z]+',
-        },
-      );
+        verify: () => undefined,
+        toRegExp: () => '[a-z]+',
+      });
 
       registerConstraint('uuidish', constraint);
 
@@ -298,17 +290,15 @@ describe('match', () => {
     });
 
     it('should not throw custom constraint validation error when strict mode is disabled', () => {
-      const constraint: ConstraintValidation = Object.assign(
-        (param: string, value: string | number | boolean | undefined) => {
+      const constraint = createConstraint({
+        parse: (param, value) => {
           if (value !== 'valid') {
             throw new Error(`Parameter "${param}" must be valid`);
           }
         },
-        {
-          verify: () => undefined,
-          toRegExp: () => '[a-z]+',
-        },
-      );
+        verify: () => undefined,
+        toRegExp: () => '[a-z]+',
+      });
 
       registerConstraint('uuidish', constraint);
 
@@ -319,17 +309,15 @@ describe('match', () => {
     });
 
     it('should match custom constraint when strict mode is enabled and value is valid', () => {
-      const constraint: ConstraintValidation = Object.assign(
-        (param: string, value: string | number | boolean | undefined) => {
+      const constraint = createConstraint({
+        parse: (param, value) => {
           if (value !== 'valid') {
             throw new Error(`Parameter "${param}" must be valid`);
           }
         },
-        {
-          verify: () => undefined,
-          toRegExp: () => '[a-z]+',
-        },
-      );
+        verify: () => undefined,
+        toRegExp: () => '[a-z]+',
+      });
 
       registerConstraint('uuidish', constraint);
 

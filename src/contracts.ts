@@ -44,9 +44,11 @@ interface Constraint {
 interface ConstraintValidation {
   (paramName: string, value: string | number | boolean | undefined, params: string): void;
 
-  verify(paramName: string, params: string): void;
+  // eslint-disable-next-line  @typescript-eslint/no-invalid-void-type
+  verify(this: void, paramName: string, params: string): void;
 
-  toRegExp(params: string): string;
+  // eslint-disable-next-line  @typescript-eslint/no-invalid-void-type
+  toRegExp(this: void, params: string): string;
 }
 
 type MatchedParam = Record<string, string | string[] | null | undefined>;
