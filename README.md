@@ -336,8 +336,6 @@ This is useful for non-slash route styles such as:
 - message topics
 - internal identifiers
 
-````
-
 ---
 
 ## prune
