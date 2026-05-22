@@ -71,7 +71,7 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
   - [list](#list)
   - [regex](#regex)
 - [Custom Constraints](#custom-constraints)
-  - [ConstraintValidation](#constraintvalidation)
+  - [createConstraint](#createConstraint)
   - [registerConstraint()](#registerconstraint)
   - [unregisterConstraint()](#unregisterconstraint)
   - [hasConstraint()](#hasconstraint)
