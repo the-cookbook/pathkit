@@ -22,7 +22,7 @@ const range: ConstraintValidation = (paramName, value, params) => {
     throw new Error(
       `[Constraint] Parameter "${paramName}" must be a number between ${String(min)} and ${String(
         max,
-      )}, received ${receivedValue}`,
+      )}, instead received "${receivedValue}"`,
     );
   }
 };
@@ -33,7 +33,7 @@ range.verify = (paramName, params) => {
   if (interval.length !== 2) {
     throw new Error(
       `[Constraint] Constraint 'range' declared for '${paramName}' parameter` +
-        ` expects expected 2 parameters, received ${String(interval.length)}`,
+        ` expects expected 2 parameters, received ${!params.length ? '0' : String(interval.length)}`,
     );
   }
 

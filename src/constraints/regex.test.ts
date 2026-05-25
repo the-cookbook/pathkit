@@ -26,26 +26,37 @@ describe('constraints/regex', () => {
     expect(() => {
       regex('page', '1', '\\d');
     }).not.toThrow();
+    expect(new RegExp(regex.toRegExp('^\\d+'), 'g').exec('1')?.[0]).toEqual('1');
 
     expect(() => {
       regex('page', '2', '[0-9]');
     }).not.toThrow();
+    expect(new RegExp(regex.toRegExp('[0-9]'), 'g').exec('2')?.[0]).toEqual('2');
 
     expect(() => {
-      regex('page', '2', '[0-9]{2}');
-    }).toThrow();
+      regex('page', '22', '[0-9]{2}');
+    }).not.toThrow();
+    expect(new RegExp(regex.toRegExp('[0-9]{2}'), 'g').exec('22')?.[0]).toEqual('22');
 
     expect(() => {
       regex('page', '0', '[a-z]');
     }).toThrow();
+    expect(new RegExp(regex.toRegExp('[a-z]'), 'g').exec('a')?.[0]).toEqual('a');
 
     expect(() => {
-      regex('page', 'hello', '[a-z]');
+      regex('page', 'hello', '[a-z]+');
     }).not.toThrow();
+    expect(new RegExp(regex.toRegExp('[a-z]+'), 'g').exec('hello')?.[0]).toEqual('hello');
 
     expect(() => {
       regex('page', 'hello', '^[a-z]+$');
     }).not.toThrow();
+    expect(new RegExp(regex.toRegExp('^[a-z]+$'), 'g').exec('hello')?.[0]).toEqual('hello');
+
+    expect(() => {
+      regex('page', 'hello', '[\\w]+');
+    }).not.toThrow();
+    expect(new RegExp(regex.toRegExp('[\\w]+'), 'g').exec('hello')?.[0]).toEqual('hello');
 
     expect(() => {
       regex(
@@ -54,6 +65,14 @@ describe('constraints/regex', () => {
         '^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$',
       );
     }).not.toThrow();
+    expect(
+      new RegExp(
+        regex.toRegExp(
+          '^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$',
+        ),
+        'g',
+      ).exec('d3aa88e2-c754-41e0-8ba6-4198a34aa0a2')?.[0],
+    ).toEqual('d3aa88e2-c754-41e0-8ba6-4198a34aa0a2');
   });
 
   describe('toRegExp()', () => {

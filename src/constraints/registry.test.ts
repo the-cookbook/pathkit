@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+
 import compile from '../compile';
 import match from '../match';
 import type { ConstraintValidation } from '../contracts';
@@ -46,6 +48,21 @@ describe('constraints/registry', () => {
     expect(getConstraint('list')).toBeTypeOf('function');
     expect(getConstraint('range')).toBeTypeOf('function');
     expect(getConstraint('regex')).toBeTypeOf('function');
+  });
+
+  it('should call verify before parsing a constraint value', () => {
+    const verify = vi.fn();
+
+    const constraint = createConstraint({
+      parse: vi.fn(),
+      verify,
+      toRegExp: () => '[a-z0-9-]+',
+    });
+
+    constraint('options', 'hello', 'hello|world');
+
+    expect(verify).toHaveBeenCalledTimes(1);
+    expect(verify).toHaveBeenCalledWith('options', 'hello|world');
   });
 
   it('should register custom constraint', () => {
