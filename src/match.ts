@@ -26,7 +26,7 @@ const getDefaultParamPattern = (paramSegment: ParameterSegment): string => {
   return '[^/]+';
 };
 
-const getParamPattern = (paramSegment: ParameterSegment): string => {
+const getParamPattern = (paramSegment: ParameterSegment, options: MatchOptions): string => {
   if (!paramSegment.constraints.length) {
     return getDefaultParamPattern(paramSegment);
   }
@@ -35,6 +35,12 @@ const getParamPattern = (paramSegment: ParameterSegment): string => {
     const validator = getRegisteredConstraint(constraint.type);
 
     if (!validator) {
+      if (options.strict) {
+        throw new Error(
+          `[Match] Constraint '${constraint.type}' declared for '${paramSegment.name}' parameter is not registered.`,
+        );
+      }
+
       continue;
     }
 
@@ -63,7 +69,7 @@ const buildRegexFromRoute = (
 
       paramNames.push(paramName);
 
-      const paramPattern = getParamPattern(segment);
+      const paramPattern = getParamPattern(segment, options);
 
       if (segment.optional) {
         const previousSegment = segments[i - 1];

@@ -350,7 +350,7 @@ Available values:
 'duplication';
 'trailing';
 false;
-````
+```
 
 ### `'all'`
 

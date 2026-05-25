@@ -1,7 +1,14 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import lexer from './lexer';
 import type { Token } from './contracts';
 
 describe('lexer', () => {
+  afterEach(() => {
+    vi.doUnmock('./utils/token');
+    vi.resetModules();
+  });
+
   describe('literal segments', () => {
     it('tokenize single literal segment', () => {
       const path = '/segment';
@@ -18,6 +25,17 @@ describe('lexer', () => {
       expect(lexer(path)).toStrictEqual([
         { type: 'Identifier', value: '/first/second', position: 0 },
         { type: 'EndOfInput', position: 13 },
+      ] satisfies Token[]);
+    });
+
+    it('tokenize an empty route', () => {
+      expect(lexer('')).toStrictEqual([{ type: 'EndOfInput', position: 0 }] satisfies Token[]);
+    });
+
+    it('tokenize literal segment with dot characters', () => {
+      expect(lexer('/articles/post.json')).toStrictEqual([
+        { type: 'Identifier', value: '/articles/post.json', position: 0 },
+        { type: 'EndOfInput', position: 19 },
       ] satisfies Token[]);
     });
   });
@@ -74,6 +92,20 @@ describe('lexer', () => {
         { type: 'QuestionMark', position: 6 },
         { type: 'CloseBrace', position: 7 },
         { type: 'EndOfInput', position: 8 },
+      ] satisfies Token[]);
+    });
+
+    it('tokenize optional wildcard parameter segment', () => {
+      const path = '/{*path?}';
+
+      expect(lexer(path)).toStrictEqual([
+        { type: 'Identifier', value: '/', position: 0 },
+        { type: 'OpenBrace', position: 1 },
+        { type: 'Asterisk', position: 2 },
+        { type: 'Identifier', value: 'path', position: 3 },
+        { type: 'QuestionMark', position: 7 },
+        { type: 'CloseBrace', position: 8 },
+        { type: 'EndOfInput', position: 9 },
       ] satisfies Token[]);
     });
 
@@ -167,6 +199,23 @@ describe('lexer', () => {
     });
   });
 
+  describe('single-character tokens', () => {
+    it('tokenize every supported token character', () => {
+      expect(lexer('{}:?*,()\\x')).toStrictEqual([
+        { type: 'OpenBrace', position: 0 },
+        { type: 'CloseBrace', position: 1 },
+        { type: 'Colon', position: 2 },
+        { type: 'QuestionMark', position: 3 },
+        { type: 'Asterisk', position: 4 },
+        { type: 'Comma', position: 5 },
+        { type: 'LeftParen', position: 6 },
+        { type: 'RightParen', position: 7 },
+        { type: 'EscapedChar', value: '\\x', position: 8 },
+        { type: 'EndOfInput', position: 10 },
+      ] satisfies Token[]);
+    });
+  });
+
   describe('nested segments', () => {
     it('tokenize simple nested segments types', () => {
       const path = '/say/{message}';
@@ -186,53 +235,21 @@ describe('lexer', () => {
       [
         '/path/with/\\{literal_braces\\}',
         [
-          {
-            type: 'Identifier',
-            value: '/path/with/',
-            position: 0,
-          },
-          {
-            type: 'EscapedChar',
-            value: '\\{',
-            position: 11,
-          },
-          {
-            type: 'Identifier',
-            value: 'literal_braces',
-            position: 13,
-          },
-          {
-            type: 'EscapedChar',
-            value: '\\}',
-            position: 27,
-          },
+          { type: 'Identifier', value: '/path/with/', position: 0 },
+          { type: 'EscapedChar', value: '\\{', position: 11 },
+          { type: 'Identifier', value: 'literal_braces', position: 13 },
+          { type: 'EscapedChar', value: '\\}', position: 27 },
           { type: 'EndOfInput', position: 29 },
         ],
       ],
       [
         '/path/with/{param\\:Name}',
         [
-          {
-            type: 'Identifier',
-            value: '/path/with/',
-            position: 0,
-          },
+          { type: 'Identifier', value: '/path/with/', position: 0 },
           { type: 'OpenBrace', position: 11 },
-          {
-            type: 'Identifier',
-            value: 'param',
-            position: 12,
-          },
-          {
-            type: 'EscapedChar',
-            value: '\\:',
-            position: 17,
-          },
-          {
-            type: 'Identifier',
-            value: 'Name',
-            position: 19,
-          },
+          { type: 'Identifier', value: 'param', position: 12 },
+          { type: 'EscapedChar', value: '\\:', position: 17 },
+          { type: 'Identifier', value: 'Name', position: 19 },
           { type: 'CloseBrace', position: 23 },
           { type: 'EndOfInput', position: 24 },
         ],
@@ -240,69 +257,41 @@ describe('lexer', () => {
       [
         '/path/with/{*wildcard\\*}',
         [
-          {
-            type: 'Identifier',
-            value: '/path/with/',
-            position: 0,
-          },
+          { type: 'Identifier', value: '/path/with/', position: 0 },
           { type: 'OpenBrace', position: 11 },
           { type: 'Asterisk', position: 12 },
-          {
-            type: 'Identifier',
-            value: 'wildcard',
-            position: 13,
-          },
-          {
-            type: 'EscapedChar',
-            value: '\\*',
-            position: 21,
-          },
+          { type: 'Identifier', value: 'wildcard', position: 13 },
+          { type: 'EscapedChar', value: '\\*', position: 21 },
           { type: 'CloseBrace', position: 23 },
           { type: 'EndOfInput', position: 24 },
         ],
       ],
       [
         '/path/with/{paramName:regex(/([0-9]+)/)}',
-
         [
-          {
-            type: 'Identifier',
-            value: '/path/with/',
-            position: 0,
-          },
+          { type: 'Identifier', value: '/path/with/', position: 0 },
           { type: 'OpenBrace', position: 11 },
-          {
-            type: 'Identifier',
-            value: 'paramName',
-            position: 12,
-          },
+          { type: 'Identifier', value: 'paramName', position: 12 },
           { type: 'Colon', position: 21 },
-          {
-            type: 'Identifier',
-            value: 'regex',
-            position: 22,
-          },
+          { type: 'Identifier', value: 'regex', position: 22 },
           { type: 'LeftParen', position: 27 },
-          {
-            type: 'Identifier',
-            value: '/',
-            position: 28,
-          },
+          { type: 'Identifier', value: '/', position: 28 },
           { type: 'LeftParen', position: 29 },
-          {
-            type: 'Identifier',
-            value: '[0-9]+',
-            position: 30,
-          },
+          { type: 'Identifier', value: '[0-9]+', position: 30 },
           { type: 'RightParen', position: 36 },
-          {
-            type: 'Identifier',
-            value: '/',
-            position: 37,
-          },
+          { type: 'Identifier', value: '/', position: 37 },
           { type: 'RightParen', position: 38 },
           { type: 'CloseBrace', position: 39 },
           { type: 'EndOfInput', position: 40 },
+        ],
+      ],
+      [
+        '/path/with/\\?query',
+        [
+          { type: 'Identifier', value: '/path/with/', position: 0 },
+          { type: 'EscapedChar', value: '\\?', position: 11 },
+          { type: 'Identifier', value: 'query', position: 13 },
+          { type: 'EndOfInput', position: 18 },
         ],
       ],
     ];
@@ -379,7 +368,6 @@ describe('lexer', () => {
       ] satisfies Token[]);
 
       expect(() => lexer('/say/{message:range(}')).not.toThrow();
-
       expect(lexer('/say/{message:range(}')).toStrictEqual([
         { type: 'Identifier', value: '/say/', position: 0 },
         { type: 'OpenBrace', position: 5 },
@@ -392,11 +380,32 @@ describe('lexer', () => {
       ] satisfies Token[]);
     });
 
-    it('throws error on duplicated parameter name', () => {
+    it('throws error on dangling escape character', () => {
       const path = '/say\\';
 
       expect(() => lexer(path)).toThrow(
         'Unexpected end of input after escape character at index 5',
+      );
+    });
+
+    it('throws error when route contains an empty character before end of input', () => {
+      const route = {
+        length: 1,
+      } as unknown as string;
+
+      expect(() => lexer(route)).toThrow('[Lexer] Unexpected empty character at index 0');
+    });
+
+    it('throws error when the lexer index does not advance', async () => {
+      vi.doMock('./utils/token', () => ({
+        charToTokenType: {},
+        tokenTypeCharList: ['@'],
+      }));
+
+      const { default: mockedLexer } = await import('./lexer');
+
+      expect(() => mockedLexer('@')).toThrow(
+        "[Lexer] Infinite loop detected: index 'i' did not increment at position 0. Current character: '@'",
       );
     });
   });

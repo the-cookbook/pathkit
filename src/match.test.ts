@@ -4,6 +4,11 @@ import { createConstraint, registerConstraint, unregisterConstraint } from './co
 describe('match', () => {
   afterEach(() => {
     unregisterConstraint('int');
+    unregisterConstraint('uuidish');
+    unregisterConstraint('empty-regexp');
+    vi.doUnmock('./tokenize');
+    vi.doUnmock('./utils/segment-filters');
+    vi.resetModules();
   });
 
   it('should throw error on wrong route pattern', () => {
@@ -11,18 +16,27 @@ describe('match', () => {
   });
 
   it('should return null when route pattern differs from href path', () => {
-    expect(match('/hello')('/hello/world')).toEqual({ match: false, params: null });
+    expect(match('/hello')('/hello/world')).toEqual({
+      match: false,
+      params: null,
+    });
   });
 
-  it('should not match literal segment(s)', () => {
-    expect(match('/hello')('/hello')).toEqual({ match: true, params: {} });
+  it('should match literal segment(s)', () => {
+    expect(match('/hello')('/hello')).toEqual({
+      match: true,
+      params: {},
+    });
   });
 
   it('should not match when missing required parameter', () => {
-    expect(match('/hello/{message}')('/hello')).toEqual({ match: false, params: null });
+    expect(match('/hello/{message}')('/hello')).toEqual({
+      match: false,
+      params: null,
+    });
   });
 
-  it('should not match even when all parameters are optional', () => {
+  it('should not match even when all parameters are optional and literal path differs', () => {
     expect(match('/placeholder/{view:list(foo|bar)?}/{id?}')('/no-match-at-all')).toEqual({
       match: false,
       params: null,
@@ -39,21 +53,29 @@ describe('match', () => {
   it('should match when trailing options is enabled', () => {
     expect(match('/hello/{message}')('/hello/world/')).toEqual({
       match: true,
-      params: { message: 'world' },
+      params: {
+        message: 'world',
+      },
     });
+  });
 
-    expect(match(`/say/after/{message?}/{id?}`)('/say/after/')).toEqual({
+  it('should match optional parameters before trailing delimiter', () => {
+    expect(match('/say/after/{message?}/{id?}')('/say/after/')).toEqual({
       match: true,
       params: {},
     });
+  });
 
+  it('should match optional constrained parameter before trailing delimiter', () => {
     expect(
-      match(`/{lang?}/my-content/shorts/{privacy:list(free|premium)?}/{shortsId?}`)(
+      match('/{lang?}/my-content/shorts/{privacy:list(free|premium)?}/{shortsId?}')(
         '/en/my-content/shorts/',
       ),
     ).toEqual({
       match: true,
-      params: { lang: 'en' },
+      params: {
+        lang: 'en',
+      },
     });
   });
 
@@ -62,7 +84,6 @@ describe('match', () => {
       parse: (param) => {
         throw new Error(`Parameter "${param}" failed runtime validation`);
       },
-
       verify: () => undefined,
       toRegExp: () => '\\d+',
     });
@@ -79,7 +100,6 @@ describe('match', () => {
       parse: (param: string) => {
         throw new Error(`Parameter "${param}" failed runtime validation`);
       },
-
       verify: () => undefined,
       toRegExp: () => '\\d+',
     });
@@ -92,77 +112,207 @@ describe('match', () => {
     });
   });
 
+  it('should not match when constraint is not registered', () => {
+    expect(match('/users/{id:notRegistered}')('/users/abc')).toEqual({
+      match: false,
+      params: null,
+    });
+  });
+
+  it('should not match when wildcard constraint is not registered', () => {
+    expect(match('/files/{*path:notRegistered}')('/files/docs/guides/readme')).toEqual({
+      match: false,
+      params: null,
+    });
+  });
+
+  it('should throw when constraint is not registered and strict mode is enabled', () => {
+    expect(() => {
+      match('/users/{id:notRegistered}', { strict: true })('/users/abc');
+    }).toThrow("[Match] Constraint 'notRegistered' declared for 'id' parameter is not registered.");
+  });
+
+  it('should throw when wildcard constraint is not registered and strict mode is enabled', () => {
+    expect(() => {
+      match('/files/{*path:notRegistered}', { strict: true })('/files/docs/guides/readme');
+    }).toThrow(
+      "[Match] Constraint 'notRegistered' declared for 'path' parameter is not registered.",
+    );
+  });
+
+  it('should fallback to the default parameter pattern when registered constraint returns empty regexp', () => {
+    const emptyRegExpConstraint = createConstraint({
+      parse: () => undefined,
+      verify: () => undefined,
+      toRegExp: () => '',
+    });
+
+    registerConstraint('empty-regexp', emptyRegExpConstraint);
+
+    expect(match('/users/{id:empty-regexp}')('/users/abc')).toEqual({
+      match: true,
+      params: {
+        id: 'abc',
+      },
+    });
+  });
+
+  it('should match optional parameter without previous literal segment', () => {
+    expect(match('{id?}')('abc')).toEqual({
+      match: true,
+      params: {
+        id: 'abc',
+      },
+    });
+  });
+
+  it('should match missing optional parameter without previous literal segment', () => {
+    expect(match('{id?}')('')).toEqual({
+      match: true,
+      params: {
+        id: undefined,
+      },
+    });
+  });
+
   it.each([
     {
       pattern: '/hello/{say}',
       path: '/hello/world',
-      matches: { match: true, params: { say: 'world' } },
+      matches: {
+        match: true,
+        params: {
+          say: 'world',
+        },
+      },
     },
     {
       pattern: '/',
       path: '/',
-      matches: { match: true, params: {} },
+      matches: {
+        match: true,
+        params: {},
+      },
     },
     {
       pattern: '/page/settings/{number:range(1,100)?}',
       path: '/page/settings/50',
-      matches: { match: true, params: { number: '50' } },
+      matches: {
+        match: true,
+        params: {
+          number: '50',
+        },
+      },
     },
     {
       pattern: '/page/settings/{number:regex(\\d+)?}',
       path: '/page/settings/50',
-      matches: { match: true, params: { number: '50' } },
+      matches: {
+        match: true,
+        params: {
+          number: '50',
+        },
+      },
     },
     {
       pattern: '/page/settings/{number:regex(([0-9]+))?}',
       path: '/page/settings/50',
-      matches: { match: true, params: { number: '50' } },
+      matches: {
+        match: true,
+        params: {
+          number: '50',
+        },
+      },
     },
     {
       pattern:
         '/page/settings/{id:regex(^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$)?}',
       path: '/page/settings/d3aa88e2-c754-41e0-8ba6-4198a34aa0a2',
-      matches: { match: true, params: { id: 'd3aa88e2-c754-41e0-8ba6-4198a34aa0a2' } },
+      matches: {
+        match: true,
+        params: {
+          id: 'd3aa88e2-c754-41e0-8ba6-4198a34aa0a2',
+        },
+      },
     },
     {
       pattern: '/page/settings/{number:range(1,100)?}',
       path: '/page/settings',
-      matches: { match: true, params: {} },
+      matches: {
+        match: true,
+        params: {},
+      },
     },
     {
       pattern: '/search/{type:list(view|expanded|details)}',
       path: '/search/view',
-      matches: { match: true, params: { type: 'view' } },
+      matches: {
+        match: true,
+        params: {
+          type: 'view',
+        },
+      },
     },
     {
       pattern: '/search/{*wildcard}',
       path: '/search/anything/goes/here',
-      matches: { match: true, params: { wildcard: 'anything/goes/here' } },
+      matches: {
+        match: true,
+        params: {
+          wildcard: 'anything/goes/here',
+        },
+      },
     },
     {
       pattern: '/search/{*wildcard?}',
       path: '/search',
-      matches: { match: true, params: { wildcard: undefined } },
+      matches: {
+        match: true,
+        params: {
+          wildcard: undefined,
+        },
+      },
     },
     {
       pattern: '/search/{name}/{lastname?}',
       path: '/search',
-      matches: { match: false, params: null },
+      matches: {
+        match: false,
+        params: null,
+      },
     },
     {
       pattern: '/search/{page?}/{term?}',
       path: '/search',
-      matches: { match: true, params: { page: undefined, term: undefined } },
+      matches: {
+        match: true,
+        params: {
+          page: undefined,
+          term: undefined,
+        },
+      },
     },
     {
       pattern: '/search/{page?}/{term?}',
       path: '/search/videos',
-      matches: { match: true, params: { page: 'videos', term: undefined } },
+      matches: {
+        match: true,
+        params: {
+          page: 'videos',
+          term: undefined,
+        },
+      },
     },
     {
       pattern: '/search/{page?}/{term?}',
       path: '/search/videos/newest',
-      matches: { match: true, params: { page: 'videos', term: 'newest' } },
+      matches: {
+        match: true,
+        params: {
+          page: 'videos',
+          term: 'newest',
+        },
+      },
     },
   ])('should match route pattern $pattern', ({ pattern, path, matches }) => {
     expect(match(pattern)(path)).toEqual(matches);
@@ -172,32 +322,60 @@ describe('match', () => {
     {
       pattern: '.hello.{say}',
       path: '.hello.world',
-      matches: { match: true, params: { say: 'world' } },
+      matches: {
+        match: true,
+        params: {
+          say: 'world',
+        },
+      },
     },
     {
       pattern: '.page.settings.{number:range(1,100)?}',
       path: '.page.settings.50',
-      matches: { match: true, params: { number: '50' } },
+      matches: {
+        match: true,
+        params: {
+          number: '50',
+        },
+      },
     },
     {
       pattern: '.page.settings.{number:range(1,100)?}',
       path: '.page.settings',
-      matches: { match: true, params: {} },
+      matches: {
+        match: true,
+        params: {},
+      },
     },
     {
       pattern: '.search.{type:list(view|expanded|details)}',
       path: '.search.view',
-      matches: { match: true, params: { type: 'view' } },
+      matches: {
+        match: true,
+        params: {
+          type: 'view',
+        },
+      },
     },
     {
       pattern: '.search.{*wildcard}',
       path: '.search.anything.goes.here',
-      matches: { match: true, params: { wildcard: 'anything.goes.here' } },
+      matches: {
+        match: true,
+        params: {
+          wildcard: 'anything.goes.here',
+        },
+      },
     },
     {
       pattern: '.search.{*wildcard?}',
       path: '.search',
-      matches: { match: true, params: { wildcard: undefined } },
+      matches: {
+        match: true,
+        params: {
+          wildcard: undefined,
+        },
+      },
     },
   ])('should match route pattern $pattern with custom delimiter', ({ pattern, path, matches }) => {
     expect(match(pattern, { delimiter: '.' })(path)).toEqual(matches);
@@ -207,12 +385,22 @@ describe('match', () => {
     {
       pattern: '/hello/{say}',
       path: `/hello/${encodeURIComponent('joão')}`,
-      matches: { match: true, params: { say: encodeURIComponent('joão') } },
+      matches: {
+        match: true,
+        params: {
+          say: encodeURIComponent('joão'),
+        },
+      },
     },
     {
       pattern: '/path/{path}',
       path: `/path/${encodeURIComponent('foo/bar')}`,
-      matches: { match: true, params: { path: encodeURIComponent('foo/bar') } },
+      matches: {
+        match: true,
+        params: {
+          path: encodeURIComponent('foo/bar'),
+        },
+      },
     },
   ])('should match route pattern with encoded params', ({ pattern, path, matches }) => {
     expect(match(pattern)(path)).toEqual(matches);
@@ -225,7 +413,6 @@ describe('match', () => {
           throw new Error(`Parameter "${param}" must be uuidish`);
         }
       },
-
       verify: () => undefined,
       toRegExp: () => '[a-f0-9]{8}',
     });
@@ -357,6 +544,40 @@ describe('match', () => {
         params: {
           id: 'a1b2c3d4',
         },
+      });
+    });
+  });
+
+  describe('defensive branches', () => {
+    it('should continue when a matched param name has no corresponding parameter segment', async () => {
+      let parameterFilterCalls = 0;
+
+      vi.doMock('./tokenize', () => ({
+        default: vi.fn(() => [
+          {
+            type: 'parameter',
+            name: 'id',
+            wildcard: false,
+            optional: false,
+            constraints: [],
+          },
+        ]),
+      }));
+
+      vi.doMock('./utils/segment-filters', () => ({
+        isLiteralToken: vi.fn(() => false),
+        isParameterToken: vi.fn(() => {
+          parameterFilterCalls += 1;
+
+          return parameterFilterCalls > 1;
+        }),
+      }));
+
+      const { default: mockedMatch } = await import('./match');
+
+      expect(mockedMatch('/ignored')('abc')).toEqual({
+        match: true,
+        params: {},
       });
     });
   });
