@@ -72,7 +72,9 @@
     "playground:typecheck": "pnpm --filter pathkit-playground typecheck",
     "changeset": "changeset",
     "version-package": "changeset version",
-    "release": "pnpm run typecheck && pnpm test && pnpm playground && pnpm run build && changeset publish"
+    "release:check": "pnpm run typecheck && pnpm test && pnpm playground && pnpm run build",
+    "release:publish": "changeset publish",
+    "release": "pnpm run release:check && pnpm run release:publish"
   },
   "keywords": [
     "routing",
