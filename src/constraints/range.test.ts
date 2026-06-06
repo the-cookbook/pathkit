@@ -44,6 +44,12 @@ describe('constraints/range', () => {
     }).not.toThrow();
     expect(new RegExp(range.toRegExp('1,3'), 'g').exec('2')?.[0]).toEqual('2');
 
+    // ensure decimal support
+    expect(() => {
+      range('page', '2.5', '1,3');
+    }).not.toThrow();
+    expect(new RegExp(range.toRegExp('1,3'), 'g').exec('2.5')?.[0]).toEqual('2.5');
+
     expect(() => {
       range('page', '0', '1,3');
     }).toThrow(/"page" must be a number between 1 and 3, instead received "0"/i);
@@ -56,8 +62,8 @@ describe('constraints/range', () => {
   describe('toRegExp()', () => {
     it('should mount RegExp string correct', () => {
       // @ts-expect-error: type error expect for test assertion
-      expect(range.toRegExp()).toEqual('\\d+');
-      expect(range.toRegExp('')).toEqual('\\d+');
+      expect(range.toRegExp()).toEqual('\\d+(?:\\.\\d+)?');
+      expect(range.toRegExp('')).toEqual('\\d+(?:\\.\\d+)?');
     });
   });
 });

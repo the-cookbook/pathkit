@@ -51,12 +51,62 @@ assertEqual(
 );
 
 assertEqual(
+  matchUser('/users/1.2'),
+  {
+    match: false,
+    params: null,
+  },
+  'match() should reject decimal route',
+);
+
+assertEqual(
   matchUser('/users/abc'),
   {
     match: false,
     params: null,
   },
   'match() should reject invalid int route',
+);
+
+const toProductsPrice = compile('/products/{price:decimal}');
+
+assertEqual(
+  toProductsPrice({ price: 9.99 }),
+  '/products/9.99',
+  'compile() should generate decimal route',
+);
+
+const matchProducts = match('/products/{price:decimal}');
+
+assertEqual(
+  matchProducts('/products/29'),
+  {
+    match: true,
+    params: {
+      price: '29',
+    },
+  },
+  'match() should match int route',
+);
+
+assertEqual(
+  matchProducts('/products/9.99'),
+  {
+    match: true,
+    params: {
+      price: '9.99',
+    },
+  },
+  'match() should match decimal route',
+);
+
+assertEqual(
+  matchProducts('/products/abc'),
+  {
+    match: false,
+    params: null,
+  },
+  'match() should reject invalid decimal route',
 );
 
 const toFile = compile('/files/{*path}');

@@ -56,6 +56,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "prepack": "npm run build",
+    "prepare": "husky",
     "clean": "rimraf dist coverage",
     "typecheck": "tsc --noEmit",
     "build": "rimraf dist && rollup -c && rimraf dist/types",
@@ -68,8 +70,9 @@
     "format:check": "prettier --check .",
     "playground": "pnpm build && pnpm --filter pathkit-playground start",
     "playground:typecheck": "pnpm --filter pathkit-playground typecheck",
-    "prepack": "npm run build",
-    "prepare": "husky"
+    "changeset": "changeset",
+    "version-package": "changeset version",
+    "release": "pnpm run typecheck && pnpm test && pnpm playground && pnpm run build && changeset publish"
   },
   "keywords": [
     "routing",
@@ -100,6 +103,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@eslint/js": "^9.39.1",
     "@rollup/plugin-node-resolve": "^15.3.1",
     "@rollup/plugin-typescript": "^12.1.4",

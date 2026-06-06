@@ -1,5 +1,6 @@
 import type { ConstraintValidation } from '../contracts';
 
+import decimal from './decimal';
 import int from './int';
 import list from './list';
 import range from './range';
@@ -15,6 +16,7 @@ interface ConstraintRegistry {
 
 const builtInConstraints: ConstraintRegistry = {
   int,
+  decimal,
   list,
   range,
   regex,

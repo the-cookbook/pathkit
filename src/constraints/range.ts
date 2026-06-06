@@ -50,7 +50,7 @@ range.verify = (paramName, params) => {
 };
 
 range.toRegExp = () => {
-  return '\\d+';
+  return '\\d+(?:\\.\\d+)?';
 };
 
 export default range;

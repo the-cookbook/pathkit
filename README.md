@@ -67,6 +67,7 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
     - [Example](#example-3)
 - [Built-in Constraints](#built-in-constraints)
   - [ConstraintValidation API](#constraintvalidation-api)
+  - [decimal](#decimal)
   - [int](#int)
   - [range](#range)
   - [list](#list)
@@ -733,6 +734,45 @@ interface ConstraintValidation {
   toRegExp(params: string): string;
 }
 ```
+
+---
+
+## `decimal`
+
+Validates that a parameter is a decimal.
+
+### Syntax
+
+```txt
+{price:decimal}
+```
+
+### Example
+
+```txt
+/products/by-price/{price:decimal}
+```
+
+### Valid
+
+```txt
+/products/1
+/products/1.5
+/products/42
+/products/9000
+/products/200.99
+```
+
+### Invalid
+
+```txt
+/products/abc
+/products/foo-1
+```
+
+### Notes
+
+- Does not accept constraint parameters
 
 ---
 
