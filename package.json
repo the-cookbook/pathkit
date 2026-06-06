@@ -1,6 +1,6 @@
 {
   "name": "@cookbook/pathkit",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A lightweight route pattern parser, matcher and compiler for TypeScript.",
   "type": "module",
   "license": "MIT",
