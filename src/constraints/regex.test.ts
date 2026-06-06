@@ -59,6 +59,10 @@ describe('constraints/regex', () => {
     expect(new RegExp(regex.toRegExp('[\\w]+'), 'g').exec('hello')?.[0]).toEqual('hello');
 
     expect(() => {
+      regex('page', 'Hello', '[a-z0-9-]+');
+    }).toThrow(/failed to match the regular expression/);
+
+    expect(() => {
       regex(
         'page',
         'd3aa88e2-c754-41e0-8ba6-4198a34aa0a2',

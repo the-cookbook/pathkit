@@ -5,7 +5,8 @@ import type { ConstraintValidation } from '../contracts';
 const regex: ConstraintValidation = (paramName, value, params) => {
   regex.verify(paramName, params);
 
-  const regExp = new RegExp(params);
+  const source = regex.toRegExp(params);
+  const regExp = new RegExp(`^(?:${source})$`);
 
   if (is.nullish(value) || !params.trim() || !regExp.test(String(value))) {
     throw new Error(
