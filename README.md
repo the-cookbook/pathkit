@@ -69,7 +69,11 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
   - [ConstraintValidation API](#constraintvalidation-api)
   - [decimal](#decimal)
   - [int](#int)
+  - [min](#min)
+  - [max](#max)
   - [range](#range)
+  - [minlength](#minlength)
+  - [maxlength](#maxlength)
   - [list](#list)
   - [regex](#regex)
 - [Custom Constraints](#custom-constraints)
@@ -211,14 +215,20 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 
 ```txt
 /users/{id:int}
+/products/{price:decimal:min(1):max(10)}
+/products/{slug:minlength(3):maxlength(50)}
 /posts/{slug:regex([a-z0-9-]+)}
 /search/{type:list(view|expanded|details)}
 ```
+
+Constraints can validate the parameter type, the numeric value, the value length, or a custom pattern.
 
 ## Multiple Constraints
 
 ```txt
 /users/{id:int:range(1,100)}
+/products/{price:decimal:min(1):max(10)}
+/products/{slug:minlength(3):maxlength(50)}
 ```
 
 ---
@@ -816,6 +826,90 @@ Validates that a parameter is an integer.
 
 ---
 
+## `min`
+
+Validates that a numeric parameter value is greater than or equal to a minimum value.
+
+### Syntax
+
+```txt
+{param:min(value)}
+```
+
+### Example
+
+```txt
+/products/{price:decimal:min(1)}
+```
+
+### Valid
+
+```txt
+/products/1
+/products/9.99
+/products/10
+```
+
+### Invalid
+
+```txt
+/products/0
+/products/0.99
+/products/abc
+```
+
+### Notes
+
+- The argument is required
+- The argument must be numeric
+- The comparison is inclusive
+- Values are validated numerically
+- Usually combined with `int` or `decimal` to enforce numeric route matching
+
+---
+
+## `max`
+
+Validates that a numeric parameter value is less than or equal to a maximum value.
+
+### Syntax
+
+```txt
+{param:max(value)}
+```
+
+### Example
+
+```txt
+/products/{price:decimal:max(10)}
+```
+
+### Valid
+
+```txt
+/products/1
+/products/9.99
+/products/10
+```
+
+### Invalid
+
+```txt
+/products/10.01
+/products/11
+/products/abc
+```
+
+### Notes
+
+- The argument is required
+- The argument must be numeric
+- The comparison is inclusive
+- Values are validated numerically
+- Usually combined with `int` or `decimal` to enforce numeric route matching
+
+---
+
 ## `range`
 
 Validates that a numeric parameter is inside an inclusive range.
@@ -853,6 +947,87 @@ Validates that a numeric parameter is inside an inclusive range.
 - `min` and `max` are required
 - The range is inclusive
 - Values are validated numerically
+
+---
+
+## `minlength`
+
+Validates that a parameter value has at least the specified number of characters.
+
+### Syntax
+
+```txt
+{param:minlength(length)}
+```
+
+### Example
+
+```txt
+/products/{slug:minlength(3)}
+```
+
+### Valid
+
+```txt
+/products/foo
+/products/product-123
+/products/águia
+/products/你好世界
+```
+
+### Invalid
+
+```txt
+/products/a
+/products/ab
+```
+
+### Notes
+
+- The argument is required
+- The argument must be a positive integer
+- Validates the parameter value length, not its numeric value
+- Can be combined with `maxlength` to enforce a bounded length
+
+---
+
+## `maxlength`
+
+Validates that a parameter value has no more than the specified number of characters.
+
+### Syntax
+
+```txt
+{param:maxlength(length)}
+```
+
+### Example
+
+```txt
+/products/{slug:maxlength(50)}
+```
+
+### Valid
+
+```txt
+/products/foo
+/products/product-123
+/products/águia
+/products/你好世界
+```
+
+### Invalid
+
+```txt
+/products/this-slug-is-too-long
+```
+
+### Notes
+
+- The argument is required
+- The argument must be a positive integer
+- Validates the parameter value length, not its numeric value
+- Can be combined with `minlength` to enforce a bounded length
 
 ---
 
