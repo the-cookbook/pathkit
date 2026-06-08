@@ -5,6 +5,8 @@ import int from './int';
 import list from './list';
 import range from './range';
 import regex from './regex';
+import minlength from './minlength';
+import maxlength from './maxlength';
 
 interface ConstraintRegistry {
   int: ConstraintValidation;
@@ -17,6 +19,8 @@ interface ConstraintRegistry {
 const builtInConstraints: ConstraintRegistry = {
   int,
   decimal,
+  minlength,
+  maxlength,
   list,
   range,
   regex,

@@ -22,7 +22,7 @@ decimal.verify = (paramName, params) => {
 };
 
 decimal.toRegExp = () => {
-  return '\\d+(?:\\.\\d+)?';
+  return '-?\\d+(?:\\.\\d+)?';
 };
 
 export default decimal;

@@ -10,14 +10,25 @@ describe('constraints/decimal', () => {
       );
     });
 
-    it.each([['0'], ['1'], ['9'], ['99'], ['999'], ['0.1'], ['1.0'], ['12.34'], ['999.999']])(
-      'should accept decimal value "%s"',
-      (value) => {
-        expect(() => {
-          decimal('page', value, '');
-        }).not.toThrow();
-      },
-    );
+    it.each([
+      ['-999.999'],
+      ['-12.34'],
+      ['-1.5'],
+      ['-1'],
+      ['0'],
+      ['1'],
+      ['9'],
+      ['99'],
+      ['999'],
+      ['0.1'],
+      ['1.0'],
+      ['12.34'],
+      ['999.999'],
+    ])('should accept decimal value "%s"', (value) => {
+      expect(() => {
+        decimal('page', value, '');
+      }).not.toThrow();
+    });
 
     it.each([
       [''],
@@ -30,8 +41,6 @@ describe('constraints/decimal', () => {
       ['0x10'],
       ['Infinity'],
       ['NaN'],
-      ['-1'],
-      ['-1.5'],
     ])('should throw when value "%s" is not a valid decimal', (value) => {
       expect(() => {
         decimal('page', value, '');
@@ -69,10 +78,10 @@ describe('constraints/decimal', () => {
 
   describe('toRegExp()', () => {
     it('should return the decimal RegExp source', () => {
-      expect(decimal.toRegExp('')).toEqual('\\d+(?:\\.\\d+)?');
+      expect(decimal.toRegExp('')).toEqual('-?\\d+(?:\\.\\d+)?');
     });
 
-    it.each([['0'], ['1'], ['99'], ['0.1'], ['1.0'], ['12.34']])(
+    it.each([['-1'], ['-1.5'], ['0'], ['1'], ['99'], ['0.1'], ['1.0'], ['12.34']])(
       'should match valid decimal value "%s"',
       (value) => {
         const regexp = new RegExp(`^${decimal.toRegExp('')}$`);
@@ -81,7 +90,7 @@ describe('constraints/decimal', () => {
       },
     );
 
-    it.each([[''], ['foo'], ['1.'], ['.1'], ['1e5'], ['-1'], ['1.2.3']])(
+    it.each([[''], ['foo'], ['1.'], ['.1'], ['1e5'], ['1.2.3']])(
       'should not match invalid decimal value "%s"',
       (value) => {
         const regexp = new RegExp(`^${decimal.toRegExp('')}$`);

@@ -265,6 +265,38 @@ describe('match', () => {
       },
     },
     {
+      pattern: '/products/{id:int}',
+      path: '/products/42',
+      matches: {
+        match: true,
+        params: { id: '42' },
+      },
+    },
+    {
+      pattern: '/products/{value:decimal}',
+      path: '/products/9.99',
+      matches: {
+        match: true,
+        params: { value: '9.99' },
+      },
+    },
+    {
+      pattern: '/product/{slug:minlength(2)}',
+      path: '/product/lorem-ipsum',
+      matches: {
+        match: true,
+        params: { slug: 'lorem-ipsum' },
+      },
+    },
+    {
+      pattern: '/product/{slug:minlength(2):maxlength(11)}',
+      path: '/product/lorem-ipsum',
+      matches: {
+        match: true,
+        params: { slug: 'lorem-ipsum' },
+      },
+    },
+    {
       pattern: '/search/{type:list(view|expanded|details)}',
       path: '/search/view',
       matches: {
