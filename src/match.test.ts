@@ -321,6 +321,14 @@ describe('match', () => {
       },
     },
     {
+      pattern: '/users/{id:uuid}',
+      path: '/users/7d444840-9dc0-11d1-b245-5ffdce74fad2',
+      matches: {
+        match: true,
+        params: { id: '7d444840-9dc0-11d1-b245-5ffdce74fad2' },
+      },
+    },
+    {
       pattern: '/search/{type:list(view|expanded|details)}',
       path: '/search/view',
       matches: {

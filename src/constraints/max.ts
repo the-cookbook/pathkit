@@ -22,11 +22,15 @@ const max: ConstraintValidation = (paramName, value, params) => {
 
 max.verify = (paramName, params) => {
   if (!params) {
-    throw new Error(`[Constraint] Parameter "${paramName}" requires a max value`);
+    throw new Error(
+      `[Constraint] Constraint 'max' declared for '${paramName}' parameter requires a max value`,
+    );
   }
 
   if (!/^-?\d+$/.test(params)) {
-    throw new Error(`[Constraint] Parameter "${paramName}" requires an integer value`);
+    throw new Error(
+      `[Constraint] Constraint 'max' declared for '${paramName}' parameter requires an integer value`,
+    );
   }
 };
 

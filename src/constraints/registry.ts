@@ -9,6 +9,7 @@ import min from './min';
 import max from './max';
 import minlength from './minlength';
 import maxlength from './maxlength';
+import uuid from './uuid';
 
 interface ConstraintRegistry {
   int: ConstraintValidation;
@@ -25,6 +26,7 @@ const builtInConstraints: ConstraintRegistry = {
   max,
   minlength,
   maxlength,
+  uuid,
   list,
   range,
   regex,

@@ -7,6 +7,7 @@ export { default as min } from './min';
 export { default as max } from './max';
 export { default as minlength } from './minlength';
 export { default as maxlength } from './maxlength';
+export { default as uuid } from './uuid';
 
 export {
   getConstraint,

@@ -22,11 +22,15 @@ const min: ConstraintValidation = (paramName, value, params) => {
 
 min.verify = (paramName, params) => {
   if (!params) {
-    throw new Error(`[Constraint] Parameter "${paramName}" requires a min value`);
+    throw new Error(
+      `[Constraint] Constraint 'min' declared for '${paramName}' requires a min value`,
+    );
   }
 
   if (!/^-?\d+$/.test(params)) {
-    throw new Error(`[Constraint] Parameter "${paramName}" requires an integer value`);
+    throw new Error(
+      `[Constraint] Constraint 'min' declared for '${paramName}' requires an integer value`,
+    );
   }
 };
 

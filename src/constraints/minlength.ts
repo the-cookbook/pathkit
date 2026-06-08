@@ -15,11 +15,15 @@ const minlength: ConstraintValidation = (paramName, value, params) => {
 
 minlength.verify = (paramName, params) => {
   if (!params) {
-    throw new Error(`[Constraint] Parameter "${paramName}" requires a min length value`);
+    throw new Error(
+      `[Constraint] Constraint 'minlength' declared for '${paramName}' parameter requires a min length value`,
+    );
   }
 
   if (!/^-?\d+$/.test(params)) {
-    throw new Error(`[Constraint] Parameter "${paramName}" requires an integer value`);
+    throw new Error(
+      `[Constraint] Constraint 'minlength' declared for '${paramName}' parameter requires an integer value`,
+    );
   }
 
   if (+params <= 0) {

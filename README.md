@@ -69,6 +69,7 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
   - [ConstraintValidation API](#constraintvalidation-api)
   - [decimal](#decimal)
   - [int](#int)
+  - [uuid](#uuid)
   - [min](#min)
   - [max](#max)
   - [range](#range)
@@ -215,6 +216,7 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 
 ```txt
 /users/{id:int}
+/users/{id:uuid}
 /products/{price:decimal:min(1):max(10)}
 /products/{slug:minlength(3):maxlength(50)}
 /posts/{slug:regex([a-z0-9-]+)}
@@ -823,6 +825,48 @@ Validates that a parameter is an integer.
 - Does not accept constraint parameters
 - Uses `\d+` as its match pattern
 - Runtime validation is also applied during `compile()` and during `match()` when a path candidate matches the generated pattern
+
+---
+
+## `uuid`
+
+Validates that a parameter value matches the canonical UUID format.
+
+### Syntax
+
+```txt
+{id:uuid}
+```
+
+### Example
+
+```txt
+/users/{id:uuid}
+```
+
+### Valid
+
+```txt
+/users/550e8400-e29b-41d4-a716-446655440000
+/users/00000000-0000-0000-0000-000000000000
+/users/7d444840-9dc0-11d1-b245-5ffdce74fad2
+```
+
+### Invalid
+
+```txt
+/users/abc
+/users/550e8400e29b41d4a716446655440000
+/users/550e8400-e29b-41d4-a716
+/users/zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz
+```
+
+### Notes
+
+- Does not accept constraint parameters
+- Validates the standard hyphenated UUID format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+- Matches UUID-like values such as UUID v1, v3, v4, and v5 when they use the canonical format
+- Does not enforce a specific UUID version
 
 ---
 

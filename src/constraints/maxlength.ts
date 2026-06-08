@@ -15,11 +15,15 @@ const maxlength: ConstraintValidation = (paramName, value, params) => {
 
 maxlength.verify = (paramName, params) => {
   if (!params) {
-    throw new Error(`[Constraint] Parameter "${paramName}" requires a max length value`);
+    throw new Error(
+      `[Constraint] Constraint 'maxlength' declared for '${paramName}' parameter requires a max length value`,
+    );
   }
 
   if (!/^-?\d+$/.test(params)) {
-    throw new Error(`[Constraint] Parameter "${paramName}" requires an integer value`);
+    throw new Error(
+      `[Constraint] Constraint 'maxlength' declared for '${paramName}' parameter requires an integer value`,
+    );
   }
 
   if (+params <= 0) {
