@@ -109,6 +109,21 @@ describe('lexer', () => {
       ] satisfies Token[]);
     });
 
+    it('tokenize optional constrained parameter segment', () => {
+      const path = '/{id:int?}';
+
+      expect(lexer(path)).toStrictEqual([
+        { type: 'Identifier', value: '/', position: 0 },
+        { type: 'OpenBrace', position: 1 },
+        { type: 'Identifier', value: 'id', position: 2 },
+        { type: 'Colon', position: 4 },
+        { type: 'Identifier', value: 'int', position: 5 },
+        { type: 'QuestionMark', position: 8 },
+        { type: 'CloseBrace', position: 9 },
+        { type: 'EndOfInput', position: 10 },
+      ] satisfies Token[]);
+    });
+
     it('tokenize parameter constraint segment', () => {
       const path = '/{name:uuid}';
 

@@ -66,6 +66,21 @@ describe('match', () => {
     });
   });
 
+  it.only('should match optional constrained parameter', () => {
+    expect(match('/{lang?}/articles/{id:int?}')('/en/articles/42')).toEqual({
+      match: true,
+      params: {
+        lang: 'en',
+        id: '42',
+      },
+    });
+
+    expect(match('/{lang?}/articles/{id:int?}')('/en/articles/foo')).toEqual({
+      match: false,
+      params: null,
+    });
+  });
+
   it('should match optional constrained parameter before trailing delimiter', () => {
     expect(
       match('/{lang?}/my-content/shorts/{privacy:list(free|premium)?}/{shortsId?}')(
