@@ -50,7 +50,7 @@ describe('constraints/maxlength', () => {
   });
 
   describe('toRegExp()', () => {
-    it('should return the decimal RegExp source', () => {
+    it('should return the maxlength RegExp source', () => {
       expect(maxlength.toRegExp('')).toEqual('.*');
     });
 
@@ -122,14 +122,5 @@ describe('constraints/maxlength', () => {
     it.each(values)('should match any value "%s"', (value) => {
       expect(regexp.test(value)).toBe(true);
     });
-
-    // it.each([[''], ['foo'], ['1.'], ['.1'], ['1e5'], ['1.2.3']])(
-    //   'should not match invalid decimal value "%s"',
-    //   (value) => {
-    //     const regexp = new RegExp(`^${maxlength.toRegExp('')}$`);
-
-    //     expect(regexp.test(value)).toBe(false);
-    //   },
-    // );
   });
 });

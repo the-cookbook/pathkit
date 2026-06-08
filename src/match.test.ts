@@ -281,6 +281,30 @@ describe('match', () => {
       },
     },
     {
+      pattern: '/products/{value:decimal:max(10)}',
+      path: '/products/9.99',
+      matches: {
+        match: true,
+        params: { value: '9.99' },
+      },
+    },
+    {
+      pattern: '/products/{value:decimal:min(1)}',
+      path: '/products/9.99',
+      matches: {
+        match: true,
+        params: { value: '9.99' },
+      },
+    },
+    {
+      pattern: '/products/{value:decimal:min(1):max(10)}',
+      path: '/products/9.99',
+      matches: {
+        match: true,
+        params: { value: '9.99' },
+      },
+    },
+    {
       pattern: '/product/{slug:minlength(2)}',
       path: '/product/lorem-ipsum',
       matches: {

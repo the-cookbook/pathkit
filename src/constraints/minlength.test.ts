@@ -49,7 +49,7 @@ describe('constraints/minlength', () => {
   });
 
   describe('toRegExp()', () => {
-    it('should return the decimal RegExp source', () => {
+    it('should return the minlength RegExp source', () => {
       expect(minlength.toRegExp('')).toEqual('.*');
     });
 
@@ -121,14 +121,5 @@ describe('constraints/minlength', () => {
     it.each(values)('should match any value "%s"', (value) => {
       expect(regexp.test(value)).toBe(true);
     });
-
-    // it.each([[''], ['foo'], ['1.'], ['.1'], ['1e5'], ['1.2.3']])(
-    //   'should not match invalid decimal value "%s"',
-    //   (value) => {
-    //     const regexp = new RegExp(`^${minlength.toRegExp('')}$`);
-
-    //     expect(regexp.test(value)).toBe(false);
-    //   },
-    // );
   });
 });

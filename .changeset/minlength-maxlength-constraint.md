@@ -1,10 +1,6 @@
 ---
-"@cookbook/pathkit": minor
+'@cookbook/pathkit': minor
 ---
-
-**Improved version:**
-
-**Improved version:**
 
 Add support for minimum- and maximum-length route parameters through the new `minlength` and `maxlength` constraints.
 
