@@ -1,11 +1,17 @@
 import match from './match';
-import { createConstraint, registerConstraint, unregisterConstraint } from './constraints/registry';
+import {
+  createConstraint,
+  registerConstraint,
+  resetConstraints,
+  unregisterConstraint,
+} from './constraints/registry';
 
 describe('match', () => {
   afterEach(() => {
     unregisterConstraint('int');
     unregisterConstraint('uuidish');
     unregisterConstraint('empty-regexp');
+    resetConstraints();
     vi.doUnmock('./tokenize');
     vi.doUnmock('./utils/segment-filters');
     vi.resetModules();
@@ -66,7 +72,7 @@ describe('match', () => {
     });
   });
 
-  it.only('should match optional constrained parameter', () => {
+  it('should match optional constrained parameter', () => {
     expect(match('/{lang?}/articles/{id:int?}')('/en/articles/42')).toEqual({
       match: true,
       params: {
