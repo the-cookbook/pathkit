@@ -23,6 +23,16 @@ describe('constraints/int', () => {
 
   it('should match int accordingly', () => {
     expect(() => {
+      int('page', '-99', '');
+    }).not.toThrow();
+    expect(new RegExp(int.toRegExp(''), 'g').exec('-99')?.[0]).toEqual('-99');
+
+    expect(() => {
+      int('page', '-1', '');
+    }).not.toThrow();
+    expect(new RegExp(int.toRegExp(''), 'g').exec('-1')?.[0]).toEqual('-1');
+
+    expect(() => {
       int('page', '0', '');
     }).not.toThrow();
     expect(new RegExp(int.toRegExp(''), 'g').exec('0')?.[0]).toEqual('0');
@@ -51,8 +61,8 @@ describe('constraints/int', () => {
   describe('toRegExp()', () => {
     it('should mount RegExp string correct', () => {
       // @ts-expect-error: type error expect for test assertion
-      expect(int.toRegExp()).toEqual('\\d+');
-      expect(int.toRegExp('')).toEqual('\\d+');
+      expect(int.toRegExp()).toEqual('-?\\d+');
+      expect(int.toRegExp('')).toEqual('-?\\d+');
     });
   });
 });

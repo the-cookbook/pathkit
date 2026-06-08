@@ -22,7 +22,7 @@ int.verify = (paramName, params) => {
 };
 
 int.toRegExp = () => {
-  return '\\d+';
+  return '-?\\d+';
 };
 
 export default int;
