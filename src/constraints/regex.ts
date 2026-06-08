@@ -30,7 +30,7 @@ regex.toRegExp = (params) => {
     sanitized = sanitized.substring(1);
   }
 
-  if (params.endsWith('$')) {
+  if (params.endsWith('$') && !params.endsWith('\\$')) {
     sanitized = sanitized.slice(0, -1);
   }
 

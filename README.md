@@ -1149,6 +1149,14 @@ Validates that a parameter matches a custom regular expression.
 - The regex is used by both `compile()` validation and `match()` route matching
 - Do not include route delimiters unless the parameter is intended to match them
 - For cross-segment matching, use a wildcard parameter instead
+- The `regex` constraint pattern should be provided as a raw regex source, without the conventional JavaScript regex delimiters `/.../`.
+
+  Example:
+
+  ```txt
+  /posts/{slug:regex(/[a-z0-9-]+/)} // ERROR
+  /posts/{slug:regex([a-z0-9-]+)} // CORRECT
+  ```
 
 ---
 

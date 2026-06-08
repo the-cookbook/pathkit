@@ -22,6 +22,11 @@ describe('constraints/regex', () => {
     }).toThrow("Constraint 'regex' declared for 'page' expects a regular expression parameter.");
   });
 
+  it('should not remove escaped trailing dollar sign from regex source', () => {
+    expect(regex.toRegExp('price\\$')).toEqual('price\\$');
+    expect(new RegExp(regex.toRegExp('price\\$'), 'g').exec('price$')?.[0]).toEqual('price$');
+  });
+
   it('should match regex accordingly', () => {
     expect(() => {
       regex('page', '1', '\\d');

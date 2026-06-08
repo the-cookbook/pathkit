@@ -100,6 +100,18 @@ describe('match', () => {
     });
   });
 
+  it('should match optional parameter with chained constraints', () => {
+    expect(match('/product/{slug:minlength(2):maxlength(11)?}')('/product/lorem-ipsum')).toEqual({
+      match: true,
+      params: { slug: 'lorem-ipsum' },
+    });
+
+    expect(match('/product/{slug:minlength(2):maxlength(11)?}')('/product')).toEqual({
+      match: true,
+      params: {},
+    });
+  });
+
   it('should throw built-in constraint validation error when strict mode is enabled', () => {
     const brokenInt = createConstraint({
       parse: (param) => {
@@ -226,7 +238,7 @@ describe('match', () => {
       },
     },
     {
-      pattern: '/page/settings/{number:regex(\\d+)?}',
+      pattern: '/page/settings/{number:regex([0-9]+)?}',
       path: '/page/settings/50',
       matches: {
         match: true,
@@ -266,6 +278,14 @@ describe('match', () => {
     },
     {
       pattern: '/products/{id:int}',
+      path: '/products/42',
+      matches: {
+        match: true,
+        params: { id: '42' },
+      },
+    },
+    {
+      pattern: '/products/{id:min(1)}',
       path: '/products/42',
       matches: {
         match: true,
