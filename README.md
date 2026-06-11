@@ -5,6 +5,10 @@
 [![Bundle size](https://img.shields.io/bundlephobia/minzip/@cookbook/pathkit)](https://bundlephobia.com/package/@cookbook/pathkit)
 [![CI](https://github.com/the-cookbook/pathkit/actions/workflows/ci.yml/badge.svg)](https://github.com/the-cookbook/pathkit/actions/workflows/ci.yml)
 
+<div align="center">
+  <img src="/assets/pathfox.png" alt="Cookbook Pathkit" style="width:420px;" />
+</div>
+
 A lightweight route compiler, matcher, tokenizer, and validation toolkit for JavaScript and TypeScript.
 
 `@cookbook/pathkit` provides a predictable and extensible route pattern system with support for:
