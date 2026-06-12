@@ -70,6 +70,11 @@ describe('compile()', () => {
       expects: '/search/anything/goes/here',
     },
     {
+      pattern: '/never/{secret}',
+      params: { secret: ['gonna', 'give', 'you', 'up'] },
+      expects: '/never/gonna/give/you/up',
+    },
+    {
       pattern: '/files/{*path}',
       params: { path: 'folder/subfolder/file.txt' },
       expects: '/files/folder/subfolder/file.txt',

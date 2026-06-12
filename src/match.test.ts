@@ -536,6 +536,14 @@ describe('match', () => {
         })('/files/foo%20bar');
       }).toThrow('Parameter "path" must be decoded');
     });
+
+    it('should throw when strict is set to true', () => {
+      expect(() => {
+        match('/foo/{path:int}', {
+          strict: true,
+        })('/foo/foo');
+      }).toThrow(/Parameter "path" must be a number, instead got 'string'/);
+    });
   });
 
   describe('option combinations', () => {
@@ -1219,12 +1227,12 @@ describe('match', () => {
       );
     });
 
-    it('should not throw in strict mode when regexp does not match', () => {
+    it('should throw in strict mode when regexp does not match', () => {
       registerConstraint('uuidish', uuidish);
 
-      expectFailure('/users/{id:uuidish}', '/users/not-valid', {
-        strict: true,
-      });
+      expect(() => {
+        match('/users/{id:uuidish}', { strict: true })('/users/not-valid');
+      }).toThrow();
     });
 
     it('should handle optional custom constrained params when missing', () => {

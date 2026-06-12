@@ -98,6 +98,10 @@ const getParamPattern = (paramSegment: ParameterSegment, options: ResolvedMatchO
       continue;
     }
 
+    if (options.strict) {
+      continue;
+    }
+
     const constraintRegExp = validator.toRegExp(constraint.params);
 
     if (constraintRegExp) {
