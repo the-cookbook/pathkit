@@ -85,6 +85,7 @@ describe('constraints/registry', () => {
 
     expect(match('/posts/{slug:slug}')('/posts/hello-world')).toEqual({
       match: true,
+      path: '/posts/hello-world',
       params: {
         slug: 'hello-world',
       },
@@ -148,6 +149,7 @@ describe('constraints/registry', () => {
 
     expect(match('/answer/{value:int}')('/answer/42')).toEqual({
       match: true,
+      path: '/answer/42',
       params: {
         value: '42',
       },
@@ -169,6 +171,7 @@ describe('constraints/registry', () => {
 
     expect(match('/answer/{value:int}')('/answer/41')).toEqual({
       match: true,
+      path: '/answer/41',
       params: {
         value: '41',
       },

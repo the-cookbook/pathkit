@@ -22,6 +22,11 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
 - Runtime constraints
 - Custom constraints
 - Custom delimiters
+- Prefix matching
+- Case-sensitive and case-insensitive matching
+- Optional parameter decoding
+- Configurable wildcard output
+- Consumed match path reporting
 - Parameter type enforcement
 - Strict match validation
 - TypeScript support
@@ -59,10 +64,15 @@ A lightweight route compiler, matcher, tokenizer, and validation toolkit for Jav
     - [Strict Match](#strict-match)
     - [Optional Parameters](#optional-parameters-2)
     - [Wildcards](#wildcards-1)
+    - [Prefix Matching](#prefix-matching)
   - [Match Options](#match-options)
     - [delimiter](#delimiter-1)
     - [trailing](#trailing)
     - [strict](#strict)
+    - [sensitive](#sensitive)
+    - [end](#end)
+    - [wildcardFormat](#wildcardformat)
+    - [decode](#decode)
   - [tokenize()](#tokenize)
     - [Signature](#signature-2)
     - [Example](#example-2)
@@ -117,6 +127,10 @@ npm install @cookbook/pathkit
 yarn add @cookbook/pathkit
 ```
 
+```bash
+bun add @cookbook/pathkit
+```
+
 ---
 
 # Inspiration
@@ -154,6 +168,10 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 | Custom constraints                 | Yes               | Limited/custom parsing required |
 | Optional parameters                | Yes               | Yes                             |
 | Wildcard parameters                | Yes               | Yes                             |
+| Configurable wildcard output       | Yes               | Partial                         |
+| Prefix matching                    | Yes               | Yes                             |
+| Case-sensitive matching option     | Yes               | Yes                             |
+| Consumed match path                | Yes               | Yes                             |
 | Parameter type enforcement         | Yes               | No                              |
 | Strict match validation            | Yes               | No                              |
 | TypeScript-first API               | Yes               | Partial                         |
@@ -184,6 +202,9 @@ The goal is to provide a powerful and expressive route syntax for JavaScript and
 - Functional API
 - Framework agnostic
 - SSR compatible
+- Exact and prefix route matching
+- Configurable case sensitivity
+- Configurable wildcard return format
 - ESM + CommonJS exports
 - Strong TypeScript support
 - Optional strict matching for debugging constraint failures
@@ -433,21 +454,37 @@ By default, `match()` is router-safe: constraint validation failures return a fa
 
 Use `strict: true` when you want constraint validation errors to be thrown for debugging or development tooling.
 
+Successful matches include the consumed `path`. For exact matches, this is the full matched path. For prefix matches with `end: false`, this is only the consumed prefix. This is useful for router-style integrations where a matched prefix must be stripped before continuing to nested middleware or child routes.
+
 ## Signature
 
 ```ts
+type DecodeParam = (value: string) => string;
+
+type WildcardFormat = 'string' | 'array';
+
 interface MatchOptions {
   delimiter?: string;
   trailing?: boolean;
   strict?: boolean;
+  sensitive?: boolean;
+  end?: boolean;
+  wildcardFormat?: WildcardFormat;
+  decode?: boolean | DecodeParam;
 }
 
-type MatchedParam = Record<string, string | string[] | null | undefined>;
+type MatchedParam = Record<string, string | string[] | undefined>;
 
-interface MatchResult {
-  match: boolean;
-  params: MatchedParam | null;
-}
+type MatchResult =
+  | {
+      match: true;
+      path: string;
+      params: MatchedParam;
+    }
+  | {
+      match: false;
+      params: null;
+    };
 
 declare const match: (route: string, options?: MatchOptions) => (path: string) => MatchResult;
 ```
@@ -467,6 +504,7 @@ Returns:
 ```ts
 {
   match: true,
+  path: '/users/42',
   params: {
     id: '42',
   },
@@ -544,6 +582,25 @@ Returns:
 ```ts
 {
   match: true,
+  path: '/search',
+  params: {
+    term: undefined,
+  },
+}
+```
+
+Optional parameters next to a previous literal delimiter may be omitted cleanly:
+
+```ts
+match('/product/{slug?}')('/product');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/product',
   params: {},
 }
 ```
@@ -563,8 +620,31 @@ Returns:
 ```ts
 {
   match: true,
+  path: '/files/users/john/avatar.png',
   params: {
     path: 'users/john/avatar.png',
+  },
+}
+```
+
+Use `wildcardFormat: 'array'` to return wildcard values as path segments:
+
+```ts
+const matcher = match('/files/{*path}', {
+  wildcardFormat: 'array',
+});
+
+matcher('/files/users/john/avatar.png');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/files/users/john/avatar.png',
+  params: {
+    path: ['users', 'john', 'avatar.png'],
   },
 }
 ```
@@ -585,17 +665,89 @@ const matcher = match('.users.{id}', {
 matcher('.users.10');
 ```
 
+Returns:
+
+```ts
+{
+  match: true,
+  path: '.users.10',
+  params: {
+    id: '10',
+  },
+}
+```
+
+The delimiter is also used when splitting wildcard params with `wildcardFormat: 'array'`.
+
+```ts
+const matcher = match('.files.{*path}', {
+  delimiter: '.',
+  wildcardFormat: 'array',
+});
+
+matcher('.files.docs.guides.readme');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '.files.docs.guides.readme',
+  params: {
+    path: ['docs', 'guides', 'readme'],
+  },
+}
+```
+
 ---
 
 ## trailing
 
 Controls trailing delimiter matching.
 
+Default:
+
+```ts
+trailing: true;
+```
+
+When `trailing` is enabled, a final delimiter is accepted:
+
+```ts
+match('/hello/{name}')('/hello/world/');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/hello/world/',
+  params: {
+    name: 'world',
+  },
+}
+```
+
+When `trailing` is disabled, the same path fails:
+
 ```ts
 match('/hello/{name}', {
   trailing: false,
-});
+})('/hello/world/');
 ```
+
+Returns:
+
+```ts
+{
+  match: false,
+  params: null,
+}
+```
+
+`trailing` only controls a final delimiter. It does not allow extra path segments.
 
 ---
 
@@ -631,6 +783,281 @@ Throws:
 ```txt
 [Constraint] Parameter "id" must be a number, instead got 'string'
 ```
+
+---
+
+## sensitive
+
+Controls case-sensitive matching.
+
+Default:
+
+```ts
+sensitive: false;
+```
+
+By default, matching is case-insensitive:
+
+```ts
+match('/Users/{id}')('/users/42');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/users/42',
+  params: {
+    id: '42',
+  },
+}
+```
+
+Enable `sensitive` to require exact casing:
+
+```ts
+match('/Users/{id}', {
+  sensitive: true,
+})('/users/42');
+```
+
+Returns:
+
+```ts
+{
+  match: false,
+  params: null,
+}
+```
+
+---
+
+## end
+
+Controls whether a route must consume the full path.
+
+Default:
+
+```ts
+end: true;
+```
+
+When `end` is enabled, the route must match the complete path:
+
+```ts
+match('/api')('/api/users');
+```
+
+Returns:
+
+```ts
+{
+  match: false,
+  params: null,
+}
+```
+
+When `end` is disabled, the route can match a path prefix:
+
+```ts
+match('/api', {
+  end: false,
+})('/api/users');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/api',
+  params: {},
+}
+```
+
+Prefix matching respects route delimiter boundaries:
+
+```ts
+match('/api', {
+  end: false,
+})('/apix/users');
+```
+
+Returns:
+
+```ts
+{
+  match: false,
+  params: null,
+}
+```
+
+This is useful for middleware mounting and nested router integrations.
+
+---
+
+## wildcardFormat
+
+Controls whether wildcard params are returned as a single string or as an array of segments.
+
+Default:
+
+```ts
+wildcardFormat: 'string';
+```
+
+String output:
+
+```ts
+match('/files/{*path}')('/files/docs/guides/readme');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/files/docs/guides/readme',
+  params: {
+    path: 'docs/guides/readme',
+  },
+}
+```
+
+Array output:
+
+```ts
+match('/files/{*path}', {
+  wildcardFormat: 'array',
+})('/files/docs/guides/readme');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/files/docs/guides/readme',
+  params: {
+    path: ['docs', 'guides', 'readme'],
+  },
+}
+```
+
+With a custom delimiter:
+
+```ts
+match('.files.{*path}', {
+  delimiter: '.',
+  wildcardFormat: 'array',
+})('.files.docs.guides.readme');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '.files.docs.guides.readme',
+  params: {
+    path: ['docs', 'guides', 'readme'],
+  },
+}
+```
+
+---
+
+## decode
+
+Controls whether matched params are decoded.
+
+Default:
+
+```ts
+decode: false;
+```
+
+By default, params are returned exactly as captured from the path:
+
+```ts
+match('/hello/{name}')('/hello/John%20Doe');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/hello/John%Doe',
+  params: {
+    name: 'John%20Doe',
+  },
+}
+```
+
+Use `decode: true` to decode params with `decodeURIComponent`:
+
+```ts
+match('/hello/{name}', {
+  decode: true,
+})('/hello/John%20Doe');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/hello/John%20Doe',
+  params: {
+    name: 'John Doe',
+  },
+}
+```
+
+Use a custom decoder function for framework-specific behavior:
+
+```ts
+match('/hello/{name}', {
+  decode: (value) => value.replaceAll('-', ' '),
+})('/hello/John-Doe');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/hello/John-Doe',
+  params: {
+    name: 'John Doe',
+  },
+}
+```
+
+When `wildcardFormat: 'array'` is used, wildcard values are split first and decoded segment by segment. This preserves encoded delimiters inside a segment.
+
+```ts
+match('/files/{*path}', {
+  decode: true,
+  wildcardFormat: 'array',
+})('/files/a%2Fb/c%20d');
+```
+
+Returns:
+
+```ts
+{
+  match: true,
+  path: '/files/a%2Fb/c%20d',
+  params: {
+    path: ['a/b', 'c d'],
+  },
+}
+```
+
+Decode errors are thrown and are not converted into failed matches, even when `strict` is disabled.
 
 ---
 
@@ -1282,6 +1709,7 @@ Returns:
 ```ts
 {
   match: true,
+  path: '/posts/hello-world',
   params: {
     slug: 'hello-world',
   },
@@ -1416,8 +1844,12 @@ import type { Constraint, ConstraintValidation } from '@cookbook/pathkit';
 ## Match Results
 
 ```ts
-import type { MatchedParam } from '@cookbook/pathkit';
+import type { MatchedParam, MatchResult, MatchOptions, WildcardFormat } from '@cookbook/pathkit';
 ```
+
+`MatchedParam` values can be `string`, `string[]`, or `undefined`. Wildcard params use `string[]` only when `wildcardFormat: 'array'` is enabled.
+
+Successful `MatchResult` values include the consumed `path`. Failed match results include `params: null` and do not include `path`.
 
 ---
 
@@ -1477,11 +1909,25 @@ Parameter "page" must be one of: home, dashboard
 }
 ```
 
+Successful matches include the consumed path.
+
+```ts
+{
+  match: true,
+  path: '/users/42',
+  params: {
+    id: '42',
+  },
+}
+```
+
 With `strict: true`, constraint validation errors are thrown instead of being converted into failed matches.
 
 ```txt
 [Constraint] Parameter "id" must be a number, instead got 'string'
 ```
+
+Decode errors are always thrown when `decode` is enabled. They are not converted into failed matches, because malformed encoded path values are input errors rather than route misses.
 
 ## tokenize() / validateRoute()
 
