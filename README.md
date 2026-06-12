@@ -835,7 +835,7 @@ Returns:
 
 ## end
 
-Controls whether a route must consume the full path.
+Controls whether matching must cover the full pathname or may stop at a path segment boundary.
 
 Default:
 
